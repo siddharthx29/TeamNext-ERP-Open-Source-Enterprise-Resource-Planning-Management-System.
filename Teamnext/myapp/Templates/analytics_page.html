@@ -1,0 +1,300 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Analytics - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+        }
+
+        .charts-secondary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .chart-box {
+            height: 260px;
+            position: relative;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="analytics" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Analytics Dashboard" action_label="⟳ Refresh Data" action_onclick="initDashboard()" %}
+
+        <main class="content-area">
+            <!-- Charts Primary Row -->
+            <div class="chart-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Revenue Trajectory (Last 6 Months)</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Expense Allocation Breakdown</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Secondary Row -->
+            <div class="charts-secondary-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Top Selling Items</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas id="sellingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Inventory Health</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas id="inventoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Attendance Trends (%)</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        Chart.defaults.color = '#8A96AB';
+        Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+        Chart.defaults.font.size = 11;
+
+        async function initDashboard() {
+            try {
+                const response = await fetch('/api/dashboard-data/');
+                const data = await response.json();
+
+                if (data.status === 'ok') {
+                    renderRevenueChart(data.revenue);
+                    renderExpenseChart(data.expenses);
+                    renderSellingChart(data.top_selling);
+                    renderInventoryChart(data.inventory);
+                    renderAttendanceChart(data.attendance);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard analytics:', error);
+            }
+        }
+
+        let chartInstances = {};
+
+        function destroyIfExist(id) {
+            if (chartInstances[id]) {
+                chartInstances[id].destroy();
+            }
+        }
+
+        function renderRevenueChart(rev) {
+            destroyIfExist('revenueChart');
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+            gradient.addColorStop(0, 'rgba(79, 142, 247, 0.25)');
+            gradient.addColorStop(1, 'rgba(79, 142, 247, 0.0)');
+
+            chartInstances['revenueChart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rev.labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: rev.data,
+                        borderColor: '#4F8EF7',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4F8EF7',
+                        pointBorderColor: '#FFFFFF',
+                        pointHoverRadius: 5,
+                        fill: true,
+                        backgroundColor: gradient,
+                        tension: 0.35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            grid: { color: '#F0F2F7' },
+                            ticks: { callback: value => '$' + value.toLocaleString() }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderExpenseChart(exp) {
+            destroyIfExist('expenseChart');
+            chartInstances['expenseChart'] = new Chart(document.getElementById('expenseChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: exp.labels,
+                    datasets: [{
+                        data: exp.data,
+                        backgroundColor: ['#4F8EF7', '#EC4899', '#F59E0B', '#16A34A', '#DC2626', '#3366CC'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, padding: 12 } }
+                    }
+                }
+            });
+        }
+
+        function renderSellingChart(items) {
+            destroyIfExist('sellingChart');
+            chartInstances['sellingChart'] = new Chart(document.getElementById('sellingChart'), {
+                type: 'bar',
+                data: {
+                    labels: items.labels,
+                    datasets: [{
+                        label: 'Sales Count',
+                        data: items.data,
+                        backgroundColor: '#4F8EF7',
+                        borderRadius: 4,
+                        barThickness: 14
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: '#F0F2F7' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderInventoryChart(inv) {
+            destroyIfExist('inventoryChart');
+            chartInstances['inventoryChart'] = new Chart(document.getElementById('inventoryChart'), {
+                type: 'bar',
+                data: {
+                    labels: inv.labels,
+                    datasets: [{
+                        label: 'Quantity',
+                        data: inv.data,
+                        backgroundColor: '#F59E0B',
+                        borderRadius: 4,
+                        barThickness: 16
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: '#F0F2F7' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderAttendanceChart(attend) {
+            destroyIfExist('attendanceChart');
+            chartInstances['attendanceChart'] = new Chart(document.getElementById('attendanceChart'), {
+                type: 'line',
+                data: {
+                    labels: attend.labels,
+                    datasets: [{
+                        label: 'Attendance %',
+                        data: attend.data,
+                        borderColor: '#16A34A',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 0, max: 100, grid: { color: '#F0F2F7' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        initDashboard();
+    </script>
+</body>
+
+</html>

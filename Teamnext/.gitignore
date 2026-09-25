@@ -1,0 +1,72 @@
+# ============================================================
+# Git Ignore Rules for TeamNext Enterprise ERP
+# ============================================================
+
+# Environment and Secret Configuration
+.env
+.env.*
+!.env.example
+*.env
+**/.env
+local_settings.py
+
+# SQLite Database & Local Data Stores
+*.sqlite3
+*.sqlite3-journal
+*.db
+db.sqlite3
+**/db.sqlite3
+
+# Python bytecode & runtime cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+
+# Static and media directories
+staticfiles/
+**/staticfiles/
+media/
+**/media/
+chat_media/
+**/chat_media/
+
+# Temporary test & browser user-data directories
+temp_chrome_user_data/
+temp_chrome_user_data_pdf/
+**/temp_chrome_user_data*/
+test_example.png
+*.zip
+TeamNext_ERP_Screenshots_and_PDF.zip
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+bin/
+lib/
+include/
+
+# IDE, OS, and Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+*.sublime-workspace
+*.sublime-project
+
+# Logs, test reports, and cache
+*.log
+logs/
+*.out
+.pytest_cache/
+.coverage
+htmlcov/
+scratch/

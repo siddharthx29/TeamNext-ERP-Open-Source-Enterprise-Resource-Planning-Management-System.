@@ -1,0 +1,649 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamNext Enterprise ERP - Login</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .auth-card-exact {
+            display: grid;
+            grid-template-columns: 360px 480px;
+            width: 840px;
+            max-width: 100%;
+            min-height: 560px;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card-exact::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            border-radius: inherit;
+            background: conic-gradient(from 0deg, transparent 0deg 270deg, rgba(255, 255, 255, 0.2) 292deg, #FFFFFF 320deg, rgba(255, 255, 255, 0.2) 348deg, transparent 360deg);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+            pointer-events: none;
+            z-index: 2;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+            animation: auth-border-spin 4.5s linear infinite;
+        }
+
+        .auth-card-exact > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes auth-border-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .auth-card-exact::before {
+                animation: none;
+            }
+        }
+
+        .auth-left-panel {
+            background: #0B111E;
+            padding: 44px 34px 30px 34px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #FFFFFF;
+            position: relative;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+        }
+
+        .auth-geo-art {
+            position: relative;
+            width: 100%;
+            height: 110px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .geo-sphere-3d {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #3B82F6, #1E3A8A 70%, #0F172A 100%);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+            left: 20px;
+            bottom: 10px;
+        }
+
+        .geo-cube-3d {
+            position: absolute;
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, #1E293B, #0F172A);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 10px;
+            transform: rotate(-15deg) skew(-5deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            left: 80px;
+            bottom: 25px;
+        }
+
+        .geo-torus-3d {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 10px solid #2563EB;
+            border-top-color: #60A5FA;
+            border-bottom-color: #1E3A8A;
+            transform: rotateX(60deg) rotateY(20deg);
+            right: 25px;
+            bottom: 15px;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .auth-right-panel {
+            padding: 44px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: #FFFFFF;
+        }
+
+        .form-check-label {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            user-select: none;
+        }
+
+        .form-check-label input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--primary-accent);
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="auth-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <div class="auth-card-exact">
+        <!-- Left Column: Corporate Brand & 3D Artwork -->
+        <div class="auth-left-panel">
+            <div>
+                <!-- Brand Header -->
+                <div class="auth-brand-header">
+                    <div class="brand-logo">TN</div>
+                    <div>
+                        <div style="font-size:16px; font-weight:700; color:#FFFFFF; letter-spacing:-0.2px; line-height:1.2;">TeamNext</div>
+                        <div style="font-size:10.5px; color:#64748B; font-weight:500;">Enterprise ERP</div>
+                    </div>
+                </div>
+
+                <div class="auth-tagline">
+                    Run your business.<br>All in one place.
+                </div>
+
+                <!-- 4 Value Propositions from Reference Design -->
+                <div class="auth-features">
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>Complete Business Management</div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>Real-time Analytics & Reports</div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>Secure & Scalable Platform</div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>24/7 Support & Updates</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D Geometric Aesthetic Art -->
+            <div class="auth-geo-art">
+                <div class="geo-sphere-3d"></div>
+                <div class="geo-cube-3d"></div>
+                <div class="geo-torus-3d"></div>
+            </div>
+        </div>
+
+        <!-- Right Column: Authentication Form -->
+        <div class="auth-right-panel">
+            <div class="auth-title">Welcome Back!</div>
+            <div class="auth-subtitle">Sign in to your account</div>
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="auth-modes">
+                <button type="button" class="auth-mode-btn mode-btn active" data-mode="password">Password</button>
+                <button type="button" class="auth-mode-btn mode-btn" data-mode="otp">OTP Login</button>
+                <button type="button" class="auth-mode-btn mode-btn" data-mode="signup">Sign Up</button>
+            </div>
+
+            <!-- Password Login Mode (Default matching screenshot) -->
+            <div id="mode-password" class="modePanel">
+                <form method="POST" action="{% url 'password_login' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Username, Email or Workspace ID</label>
+                        <input name="email" type="text" placeholder="Enter your email, username or workspace ID" required autofocus>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <div style="position:relative;">
+                            <input name="password" id="loginPassInput" type="password" placeholder="Enter your password" required style="padding-right:38px;">
+                            <span onclick="togglePasswordVisibility('loginPassInput', this)" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="font-size:11px; color:var(--text-muted);">Account Type</label>
+                        <select name="kind" style="padding:7px 10px; font-size:12px;">
+                            <option value="employee">Employee Login</option>
+                            <option value="company">Company Administrator</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                        <label class="form-check-label">
+                            <input type="checkbox" name="remember_me" checked> Remember me
+                        </label>
+                        <a href="#" id="forgotLink" style="color:var(--primary-accent); font-size:12px; text-decoration:none; font-weight:500;">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:11px; font-size:13.5px; font-weight:600; border-radius:8px;">Sign In</button>
+
+                    <div style="text-align:center; margin-top:20px; font-size:12.5px; color:var(--text-secondary);">
+                        Don't have an account? <a href="#" onclick="switchMode('signup')" style="color:var(--primary-accent); text-decoration:none; font-weight:600;">Sign up</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- OTP Login Mode -->
+            <div id="mode-otp" class="modePanel" style="display:none;">
+                <form method="POST" action="{% url 'send_otp' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Registered Work Email</label>
+                        <input name="email" type="email" placeholder="Enter your work email address" required>
+                    </div>
+                    <input type="hidden" name="purpose" value="login">
+                    <button type="submit" class="btn btn-primary" style="width:100%; padding:11px; font-size:13.5px; font-weight:600; border-radius:8px;">Send Verification Code</button>
+                </form>
+                <div style="text-align:center; margin-top:16px;">
+                    <a href="/otp/" style="color:var(--primary-accent); font-size:12px; text-decoration:none; font-weight:500;">
+                        Already have a code? Verify &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sign Up Mode -->
+            <div id="mode-signup" class="modePanel" style="display:none;">
+                <form method="POST" action="{% url 'signup' %}" id="signupForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label>Registration Type</label>
+                        <select name="kind" id="signupKind">
+                            <option value="employee">Employee joining a team</option>
+                            <option value="company">Company registering new workspace</option>
+                        </select>
+                    </div>
+
+                    <!-- Company Registration Fields -->
+                    <div id="companyFields" style="display:none">
+                        <div class="form-group">
+                            <label>Company / Workspace Name <span style="color:#EF4444;">*</span></label>
+                            <input name="company_name" id="companyName" type="text" placeholder="e.g. Acme Corporation">
+                        </div>
+                        <div class="form-group">
+                            <label>Admin Work Email <span style="color:#EF4444;">*</span></label>
+                            <input name="company_email_signup" id="companyEmail" type="email" placeholder="admin@company.com" onchange="resetOtpState()">
+                        </div>
+                        <div class="form-group">
+                            <label>Verification OTP (Optional)</label>
+                            <div class="form-row">
+                                <input name="company_otp_signup" id="companyOtp" type="text" placeholder="Enter OTP (optional)" maxlength="6">
+                                <button type="button" id="getOtpBtn" class="btn btn-ghost" onclick="requestSignupOtp()" style="flex:0 0 100px;">Get OTP</button>
+                            </div>
+                            <div id="otpTimer" style="font-size:11px; color:var(--text-muted); text-align:right; margin-top:4px; display:none">
+                                Expires in <span id="otpCount" style="color:var(--primary-accent); font-weight:600;">05:00</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Password <span style="color:#EF4444;">*</span></label>
+                            <input name="company_password_signup" id="companyPassword" type="password" placeholder="Create secure password">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Industry</label>
+                                <input name="industry" type="text" placeholder="e.g. Technology / Finance">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Registration Fields -->
+                    <div id="employeeFields">
+                        <div class="form-group">
+                            <label>Workspace Identification Code</label>
+                            <select id="companySelect" name="company_email" onchange="resetOtpState('employee')" style="margin-bottom:6px;">
+                                <option value="">-- Select Workspace ID Code --</option>
+                                {% for c in companies %}
+                                <option value="{{ c.code }}">{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <input id="companyFree" name="company_email_free" type="text" placeholder="Or enter Workspace ID Code directly (e.g. TN-CMP-0001)" oninput="if(this.value.trim()){ document.getElementById('companySelect').value = ''; } resetOtpState('employee')">
+                        </div>
+                        <div class="form-group">
+                            <label>Company Verification OTP (Optional)</label>
+                            <div class="form-row">
+                                <input name="employee_otp_signup" id="employeeOtp" type="text" placeholder="Enter OTP (optional)" maxlength="6">
+                                <button type="button" id="getEmployeeOtpBtn" class="btn btn-ghost" onclick="requestSignupOtp('employee')" style="flex:0 0 100px;">Get OTP</button>
+                            </div>
+                            <div id="otpTimerEmployee" style="font-size:11px; color:var(--text-muted); text-align:right; margin-top:4px; display:none">
+                                Expires in <span id="otpCountEmployee" style="color:var(--primary-accent); font-weight:600;">05:00</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input name="full_name" id="employeeFullName" type="text" placeholder="Aarav Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label>Your Personal / Work Email <span style="color:#EF4444;">*</span></label>
+                            <input name="employee_email_signup" id="employeeEmail" type="email" placeholder="e.g. yourname@gmail.com or work@domain.com">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Password <span style="color:#EF4444;">*</span></label>
+                                <input name="employee_password_signup" id="employeePassword" type="password" placeholder="Create password">
+                            </div>
+                            <div class="form-group">
+                                <label>Role / Title</label>
+                                <input name="role" type="text" placeholder="e.g. Senior Developer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="signupSubmitBtn" class="btn btn-primary" style="width:100%; padding:11px; margin-top:6px; font-weight:600;">Create Account</button>
+                </form>
+            </div>
+
+            <!-- Forgot Password Panel -->
+            <div id="forgot-panel" style="display:none; margin-top:16px; padding:14px; background:#FAFBFD; border-radius:8px; border:1px solid var(--border-color);">
+                <div style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:8px;">Reset Password</div>
+                <form method="POST" action="{% url 'forgot_password' %}">
+                    {% csrf_token %}
+                    <div class="form-group" style="margin-bottom:8px;">
+                        <input name="email" type="email" placeholder="Enter your registered email" required>
+                    </div>
+                    <button type="submit" class="btn btn-ghost" style="width:100%;">Send Reset OTP</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePasswordVisibility(inputId, toggleElem) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggleElem.style.color = 'var(--primary-accent)';
+                toggleElem.setAttribute('title', 'Hide password');
+            } else {
+                input.type = 'password';
+                toggleElem.style.color = 'var(--text-muted)';
+                toggleElem.setAttribute('title', 'Show password');
+            }
+        }
+
+        const btns = document.querySelectorAll('.mode-btn');
+        const panels = document.querySelectorAll('.modePanel');
+        let currentMode = 'password';
+        let hoverDebounceTimer = null;
+
+        function activateMode(mode) {
+            if (!mode || currentMode === mode) return;
+            currentMode = mode;
+            btns.forEach(b => {
+                if (b.dataset.mode === mode) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+            panels.forEach(p => {
+                p.style.display = 'none';
+            });
+            const target = document.getElementById('mode-' + mode);
+            if (target) {
+                target.style.display = 'block';
+                target.style.animation = 'none';
+                target.offsetHeight; /* trigger reflow for smooth animation replay */
+                target.style.animation = 'authFadeIn 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards';
+            }
+        }
+
+        function switchMode(modeName) {
+            if (hoverDebounceTimer) clearTimeout(hoverDebounceTimer);
+            activateMode(modeName);
+        }
+
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (hoverDebounceTimer) clearTimeout(hoverDebounceTimer);
+                activateMode(btn.dataset.mode);
+            });
+            btn.addEventListener('mouseenter', () => {
+                if (hoverDebounceTimer) clearTimeout(hoverDebounceTimer);
+                hoverDebounceTimer = setTimeout(() => {
+                    activateMode(btn.dataset.mode);
+                }, 75);
+            });
+            btn.addEventListener('mouseleave', () => {
+                if (hoverDebounceTimer) clearTimeout(hoverDebounceTimer);
+            });
+            btn.addEventListener('focus', () => {
+                if (hoverDebounceTimer) clearTimeout(hoverDebounceTimer);
+                activateMode(btn.dataset.mode);
+            });
+        });
+
+        const signupKind = document.getElementById('signupKind');
+        const companyFields = document.getElementById('companyFields');
+        const employeeFields = document.getElementById('employeeFields');
+
+        function updateSignup() {
+            if (!signupKind) return;
+            const isCompany = signupKind.value === 'company';
+            if (isCompany) {
+                if (companyFields) {
+                    companyFields.style.display = 'block';
+                    companyFields.querySelectorAll('input, select').forEach(el => el.disabled = false);
+                }
+                if (employeeFields) {
+                    employeeFields.style.display = 'none';
+                    employeeFields.querySelectorAll('input, select').forEach(el => el.disabled = true);
+                }
+            } else {
+                if (companyFields) {
+                    companyFields.style.display = 'none';
+                    companyFields.querySelectorAll('input, select').forEach(el => el.disabled = true);
+                }
+                if (employeeFields) {
+                    employeeFields.style.display = 'block';
+                    employeeFields.querySelectorAll('input, select').forEach(el => el.disabled = false);
+                }
+            }
+        }
+        if (signupKind) {
+            signupKind.addEventListener('change', updateSignup);
+            updateSignup();
+        }
+
+        const signupForm = document.getElementById('signupForm');
+        if (signupForm) {
+            signupForm.addEventListener('submit', function(e) {
+                const isCompany = signupKind && signupKind.value === 'company';
+                if (isCompany) {
+                    const cName = (document.getElementById('companyName') ? document.getElementById('companyName').value : '').trim();
+                    const cEmail = (document.getElementById('companyEmail') ? document.getElementById('companyEmail').value : '').trim();
+                    const cPass = (document.getElementById('companyPassword') ? document.getElementById('companyPassword').value : '').trim();
+                    if (!cName) {
+                        alert('Please enter your Company / Workspace Name.');
+                        e.preventDefault();
+                        return;
+                    }
+                    if (!cEmail || !cEmail.includes('@')) {
+                        alert('Please enter a valid Admin Work Email.');
+                        e.preventDefault();
+                        return;
+                    }
+                    if (!cPass) {
+                        alert('Please enter a password for your company account.');
+                        e.preventDefault();
+                        return;
+                    }
+                } else {
+                    const empEmail = (document.getElementById('employeeEmail') ? document.getElementById('employeeEmail').value : '').trim();
+                    const empPass = (document.getElementById('employeePassword') ? document.getElementById('employeePassword').value : '').trim();
+                    if (!empEmail || !empEmail.includes('@')) {
+                        alert('Please enter your personal or work email address.');
+                        e.preventDefault();
+                        return;
+                    }
+                    if (!empPass) {
+                        alert('Please create a password for your account.');
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            });
+        }
+
+        const forgotLink = document.getElementById('forgotLink');
+        if (forgotLink) {
+            forgotLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const fp = document.getElementById('forgot-panel');
+                fp.style.display = fp.style.display === 'none' ? 'block' : 'none';
+            });
+        }
+
+        let otpInterval;
+
+        async function requestSignupOtp(kind) {
+            kind = kind || 'company';
+            const emailId = kind === 'employee' ? 'employeeEmail' : 'companyEmail';
+            const btnId = kind === 'employee' ? 'getEmployeeOtpBtn' : 'getOtpBtn';
+            const timerDivId = kind === 'employee' ? 'otpTimerEmployee' : 'otpTimer';
+
+            const email = document.getElementById(emailId).value;
+            const btn = document.getElementById(btnId);
+            const timerDiv = document.getElementById(timerDivId);
+
+            if (kind === 'company' && (!email || !email.includes('@'))) {
+                alert('Please enter a valid email first');
+                return;
+            }
+
+            let targetEmail = email;
+            if (kind === 'employee') {
+                const sel = document.getElementById('companySelect');
+                const free = document.getElementById('companyFree');
+                targetEmail = (free.value || sel.value || '').trim();
+
+                if (!targetEmail) {
+                    alert('Please select or enter your Workspace ID Code first (e.g. TN-CMP-0001)');
+                    return;
+                }
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                const res = await fetch('/api/send-otp-json/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, target_email: targetEmail, kind: kind })
+                });
+                const data = await res.json();
+
+                if (data.status === 'ok') {
+                    btn.textContent = 'Sent!';
+                    timerDiv.style.display = 'block';
+                    startOtpTimer(300, kind);
+                    alert('OTP sent to ' + targetEmail);
+                } else {
+                    btn.textContent = 'Get OTP';
+                    btn.disabled = false;
+                    alert(data.message || 'Failed to send OTP');
+                }
+            } catch (e) {
+                console.error(e);
+                btn.textContent = 'Get OTP';
+                btn.disabled = false;
+                alert('Error connecting to server');
+            }
+        }
+
+        function startOtpTimer(duration, kind) {
+            kind = kind || 'company';
+            const displayId = kind === 'employee' ? 'otpCountEmployee' : 'otpCount';
+            const btnId = kind === 'employee' ? 'getEmployeeOtpBtn' : 'getOtpBtn';
+            const display = document.getElementById(displayId);
+            const btn = document.getElementById(btnId);
+
+            let timer = duration, minutes, seconds;
+            clearInterval(otpInterval);
+            otpInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(otpInterval);
+                    btn.textContent = 'Resend OTP';
+                    btn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function resetOtpState(kind) {
+            kind = kind || 'company';
+            const btnId = kind === 'employee' ? 'getEmployeeOtpBtn' : 'getOtpBtn';
+            const timerDivId = kind === 'employee' ? 'otpTimerEmployee' : 'otpTimer';
+
+            clearInterval(otpInterval);
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.textContent = 'Get OTP';
+                btn.disabled = false;
+            }
+            const timerDiv = document.getElementById(timerDivId);
+            if (timerDiv) timerDiv.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode') || (window.location.pathname.includes('signup') ? 'signup' : (window.location.hash ? window.location.hash.replace('#', '') : null));
+            if (mode && ['password', 'otp', 'signup'].includes(mode)) {
+                activateMode(mode);
+            }
+        });
+    </script>
+</body>
+
+</html>

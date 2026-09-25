@@ -1,0 +1,331 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Departments & Projects - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .dept-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .dept-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: #CBD5E1;
+        }
+
+        .dept-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .dept-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .proj-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .proj-item {
+            background: #FAFBFD;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .multi-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .multi-item {
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: #FAFBFD;
+            border: 1px solid var(--border-color);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .multi-item.selected {
+            background: var(--info-bg);
+            border-color: var(--primary-accent);
+            color: var(--primary-accent);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="departments" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Departments" action_label="+ Create Project" action_onclick="focusProjectCreator()" %}
+
+        <main class="content-area">
+            {% if is_admin %}
+            <!-- Admin Controls -->
+            <div class="grid-2">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                <line x1="12" y1="11" x2="12" y2="17"></line>
+                                <line x1="9" y1="14" x2="15" y2="14"></line>
+                            </svg>
+                            <span>Create Department</span>
+                        </span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
+                        <input id="newDeptName" placeholder="Department Name (e.g. Engineering, Sales)">
+                        <textarea id="newDeptDesc" placeholder="Department charter / summary" rows="2"></textarea>
+                        <button class="btn btn-primary" onclick="createDepartment()" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Add Department</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+                            <span>Launch Project</span>
+                        </span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
+                        <input id="newProjName" placeholder="Project Name">
+                        <textarea id="newProjDesc" placeholder="Project milestones & objectives" rows="2"></textarea>
+                        <div>
+                            <label style="font-size: 11px; margin-bottom: 4px;">Assign to Departments:</label>
+                            <div id="deptPicker" class="multi-select"></div>
+                        </div>
+                        <button class="btn btn-primary" onclick="createProject()" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Launch Project</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Structure Grid -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        </svg>
+                        <span>Organizational Structure & Active Projects</span>
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <div id="contentGrid" class="dept-grid">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div id="unassignedProjects" style="display: none; margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Standalone / Direct Projects</div>
+                        <ul id="unassignedList" class="proj-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px;"></ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let departments = [];
+        let projects = [];
+
+        // Keep the header action aligned with the actual project form.  The
+        // previous handler pointed at a retired `p-name` input and therefore
+        // appeared clickable while doing nothing.
+        function focusProjectCreator() {
+            const field = document.getElementById('newProjName');
+            if (!field) return;
+            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Wait for the smooth scroll so the focus ring is visible to the user.
+            window.setTimeout(() => field.focus(), 250);
+        }
+
+        async function loadData() {
+            try {
+                const [dRes, pRes] = await Promise.all([
+                    fetch('/api/departments/'),
+                    fetch('/api/projects/')
+                ]);
+                const [dData, pData] = await Promise.all([dRes.json(), pRes.json()]);
+
+                if (dData.status === 'ok') departments = dData.departments;
+                if (pData.status === 'ok') projects = pData.projects;
+
+                renderInterface();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderInterface() {
+            const grid = document.getElementById('contentGrid');
+            grid.innerHTML = '';
+
+            const picker = document.getElementById('deptPicker');
+            if (picker) {
+                picker.innerHTML = departments.map(d => `<div class="multi-item" data-id="${d.id}" onclick="this.classList.toggle('selected')">${d.name}</div>`).join('');
+            }
+
+            if (departments.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 32px; color: var(--text-muted); font-size: 12px;">No departments registered yet.</div>';
+                return;
+            }
+
+            departments.forEach(dept => {
+                const deptProjects = projects.filter(p => p.departments.some(pd => pd.id === dept.id));
+                const card = document.createElement('div');
+                card.className = 'dept-card';
+                card.innerHTML = `
+                    <div class="dept-header">
+                        <span class="dept-name">${dept.name}</span>
+                        <span class="badge badge-gray">${deptProjects.length} Projects</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">${dept.desc || 'No description provided.'}</div>
+                    <ul class="proj-list">
+                        ${deptProjects.length > 0 ? deptProjects.map(p => `
+                            <li class="proj-item">
+                                <span style="font-weight: 500; color: var(--text-primary);">${p.name}</span>
+                                <span class="badge badge-blue">Active</span>
+                            </li>
+                        `).join('') : '<li style="font-size: 11px; color: var(--text-muted); font-style: italic;">No active projects</li>'}
+                    </ul>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Unassigned
+            const unassigned = projects.filter(p => !p.departments || p.departments.length === 0);
+            const unSection = document.getElementById('unassignedProjects');
+            const unList = document.getElementById('unassignedList');
+            if (unassigned.length > 0) {
+                unSection.style.display = 'block';
+                unList.innerHTML = unassigned.map(p => `
+                    <li class="proj-item">
+                        <span style="font-weight: 500; color: var(--text-primary);">${p.name}</span>
+                        <span class="badge badge-amber">Direct</span>
+                    </li>
+                `).join('');
+            } else {
+                unSection.style.display = 'none';
+            }
+        }
+
+        async function createDepartment() {
+            const name = document.getElementById('newDeptName').value.trim();
+            const desc = document.getElementById('newDeptDesc').value.trim();
+            if (!name) return alert('Department name required');
+
+            try {
+                const res = await fetch('/api/departments/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, desc })
+                });
+                const data = await res.json();
+                if (data.status !== 'ok') throw new Error(data.message || 'Unable to create department');
+                document.getElementById('newDeptName').value = '';
+                document.getElementById('newDeptDesc').value = '';
+                await loadData();
+            } catch (error) {
+                alert(error.message || 'Unable to create department. Please try again.');
+            }
+        }
+
+        async function createProject() {
+            const name = document.getElementById('newProjName').value.trim();
+            const desc = document.getElementById('newProjDesc').value.trim();
+            const deptIds = Array.from(document.querySelectorAll('#deptPicker .multi-item.selected')).map(el => el.dataset.id);
+
+            if (!name) return alert('Project name required');
+
+            try {
+                const res = await fetch('/api/projects/add/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, desc, departments: deptIds })
+                });
+                const data = await res.json();
+                if (data.status !== 'ok') throw new Error(data.message || 'Unable to create project');
+                document.getElementById('newProjName').value = '';
+                document.getElementById('newProjDesc').value = '';
+                await loadData();
+            } catch (error) {
+                alert(error.message || 'Unable to create project. Please try again.');
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+
+</html>

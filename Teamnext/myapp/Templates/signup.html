@@ -1,0 +1,163 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamNext Enterprise • Company Registration</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+</head>
+
+<body class="auth-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <div class="auth-card" style="width: 960px; min-height: 620px;">
+        <!-- Left Brand Side -->
+        <div class="auth-brand-side">
+            <div>
+                <div class="auth-brand-header">
+                    <div class="brand-logo">TN</div>
+                    <div>
+                        <div style="font-size:16px; font-weight:700; color:#FFFFFF; letter-spacing:-0.3px;">TeamNext</div>
+                        <div style="font-size:11px; color:#6B7A99;">Enterprise ERP System</div>
+                    </div>
+                </div>
+
+                <div class="auth-tagline">
+                    Empower your organization with centralized command.
+                </div>
+
+                <div class="auth-features">
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>Automated Multi-Department Workflows</div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>End-to-End Asset & Financial Tracking</div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-check">✓</div>
+                        <div>Granular Access Control & Security Auditing</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size:11px; color:#5A6880; border-top:1px solid rgba(255,255,255,0.06); padding-top:16px;">
+                &copy; TeamNext Inc. Corporate Command Center
+            </div>
+        </div>
+
+        <!-- Right Form Side -->
+        <div class="auth-form-side" style="padding: 36px 40px;">
+            <div class="auth-title">Register Company Workspace</div>
+            <div class="auth-subtitle">Create a new enterprise tenant instance</div>
+
+            <form method="POST" action="/signup/">
+                {% csrf_token %}
+                <input type="hidden" name="kind" value="company">
+
+                <div class="form-group">
+                    <label>Company / Organization Name</label>
+                    <input name="company_name" placeholder="e.g. Acme Corporation" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Industry</label>
+                        <input name="industry" placeholder="e.g. SaaS / Finance" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Company Size</label>
+                        <input name="company_size" placeholder="e.g. 50-200 Employees" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Contact Person Name</label>
+                        <input name="contact_person" placeholder="Lead Administrator" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Title</label>
+                        <input name="contact_title" placeholder="e.g. VP Operations" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Business Email</label>
+                        <input name="email" type="email" placeholder="admin@company.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Business Phone</label>
+                        <input name="phone" placeholder="+1 (555) 000-0000" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Company Website (Optional)</label>
+                        <input name="website" placeholder="https://company.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Business Address</label>
+                        <input name="address" placeholder="HQ Address" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input name="password" type="password" placeholder="Create strong password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password</label>
+                        <input name="confirm_password" type="password" placeholder="Confirm password" required>
+                    </div>
+                </div>
+
+                <button id="submitBtn" type="submit" class="btn btn-primary" style="width:100%; padding:10px; margin-top:8px;">
+                    <span id="btnText">Register Workspace</span>
+                </button>
+            </form>
+
+            <div style="text-align:center; margin-top:16px;">
+                <a href="/" style="color:var(--primary-accent); font-size:12px; text-decoration:none; font-weight:500;">
+                    Already have an account? Sign In &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.querySelector("form");
+        const btnText = document.getElementById("btnText");
+
+        if (form && btnText) {
+            form.addEventListener("submit", () => {
+                btnText.innerText = "Registering...";
+            });
+        }
+    </script>
+</body>
+
+</html>

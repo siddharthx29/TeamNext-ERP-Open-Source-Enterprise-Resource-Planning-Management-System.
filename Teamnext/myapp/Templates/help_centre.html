@@ -1,0 +1,463 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Centre - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .help-hero {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(79, 70, 229, 0.12) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg, 12px);
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .help-hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        .contact-badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.05));
+        }
+        .email-copy-btn {
+            background: var(--primary-accent, #2563eb);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .email-copy-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .faq-item {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md, 8px);
+            margin-bottom: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .faq-item:hover {
+            border-color: var(--primary-accent, #2563eb);
+        }
+        .faq-header {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        .faq-body {
+            padding: 0 20px 16px 20px;
+            color: var(--text-secondary);
+            font-size: 13.5px;
+            line-height: 1.6;
+            display: none;
+            border-top: 1px dashed var(--border-subtle);
+            margin-top: 4px;
+            padding-top: 12px;
+        }
+        .faq-item.open .faq-body {
+            display: block;
+        }
+        .faq-item.open .faq-icon {
+            transform: rotate(180deg);
+        }
+        .faq-icon {
+            transition: transform 0.2s;
+        }
+        .card-action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .action-card {
+            background: #FFFFFF;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md, 8px);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,0.08));
+            border-color: var(--primary-accent, #2563eb);
+        }
+        .action-card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-accent, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with active state for Help Centre -->
+    {% include "components/sidebar.html" with active_page="help_centre" %}
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Help Centre & Support" action_label="Contact Support" action_onclick="document.getElementById('contactFormCard').scrollIntoView({behavior: 'smooth'})" %}
+
+        <main class="content-area">
+            <!-- Hero Banner -->
+            <div class="help-hero">
+                <div class="help-hero-content">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <span class="badge badge-blue" style="margin-bottom: 8px; font-size: 11px;">TeamNext Help & Support</span>
+                            <h1 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 4px 0 8px 0;">How can we help you today?</h1>
+                            <p style="color: var(--text-secondary); font-size: 14px; margin: 0; max-width: 600px;">
+                                Welcome to the TeamNext ERP Help Centre. Reach out directly to our dedicated support team or browse common answers and guides below.
+                            </p>
+                        </div>
+                        <!-- Official Support Provision Card -->
+                        <div class="contact-badge-pill">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary-accent);">
+                                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                            </svg>
+                            <div>
+                                <span style="font-size: 11px; color: var(--text-muted); display: block;">Official Support Email</span>
+                                <a href="mailto:main@teamnexterp.com" style="color: var(--primary-accent); text-decoration: none; font-weight: 700; font-size: 13.5px;" id="officialEmailText">main@teamnexterp.com</a>
+                            </div>
+                            <button class="email-copy-btn" onclick="copySupportEmail()" id="copyBtn">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Cards Grid -->
+            <div class="card-action-grid">
+                <a href="mailto:main@teamnexterp.com" class="action-card">
+                    <div class="action-card-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h9"></path>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                            <path d="M19 16v6"></path>
+                            <path d="M16 19h6"></path>
+                        </svg>
+                    </div>
+                    <strong style="font-size: 14px; color: var(--text-primary);">Email Support</strong>
+                    <span style="font-size: 12.5px; color: var(--text-secondary);">Direct contact: <strong>main@teamnexterp.com</strong>. Response within SLA.</span>
+                </a>
+
+                <a href="/tickets-page/" class="action-card">
+                    <div class="action-card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10B981;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"></path>
+                            <line x1="12" y1="9" x2="12" y2="15"></line>
+                            <line x1="9" y1="12" x2="15" y2="12"></line>
+                        </svg>
+                    </div>
+                    <strong style="font-size: 14px; color: var(--text-primary);">Submit Ticket</strong>
+                    <span style="font-size: 12.5px; color: var(--text-secondary);">Create and track internal issues in our Ticket Portal.</span>
+                </a>
+
+                <a href="/email-page/" class="action-card">
+                    <div class="action-card-icon" style="background: rgba(139, 92, 246, 0.1); color: #8B5CF6;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                        </svg>
+                    </div>
+                    <strong style="font-size: 14px; color: var(--text-primary);">Email Center</strong>
+                    <span style="font-size: 12.5px; color: var(--text-secondary);">Send and manage system emails and correspondence.</span>
+                </a>
+
+                <a href="#faqSection" onclick="document.getElementById('faqSection').scrollIntoView({behavior: 'smooth'}); return false;" class="action-card">
+                    <div class="action-card-icon" style="background: rgba(245, 158, 11, 0.1); color: #F59E0B;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <strong style="font-size: 14px; color: var(--text-primary);">FAQs & Guides</strong>
+                    <span style="font-size: 12.5px; color: var(--text-secondary);">Browse self-service solutions and step-by-step guides.</span>
+                </a>
+            </div>
+
+            <div class="grid-2" style="grid-template-columns: 1fr 380px; gap: 24px;">
+                <!-- Left Column: FAQ Section -->
+                <div>
+                    <div class="panel" id="faqSection">
+                        <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="panel-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                <span>Frequently Asked Questions</span>
+                            </span>
+                            <div style="width: 200px;">
+                                <input type="text" id="faqSearchInput" placeholder="Search FAQs..." onkeyup="filterFaqs()" style="width: 100%; padding: 6px 12px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <!-- FAQ Item 1 -->
+                            <div class="faq-item">
+                                <div class="faq-header" onclick="toggleFaq(this)">
+                                    <span>How do I contact TeamNext Support directly?</span>
+                                    <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                                <div class="faq-body">
+                                    You can send an email directly to our support desk at <a href="mailto:main@teamnexterp.com" style="color: var(--primary-accent); font-weight: 600;">main@teamnexterp.com</a>, or use the interactive inquiry form on the right of this page. Our technical team responds to all incoming inquiries promptly.
+                                </div>
+                            </div>
+
+                            <!-- FAQ Item 2 -->
+                            <div class="faq-item">
+                                <div class="faq-header" onclick="toggleFaq(this)">
+                                    <span>How do I create and manage support tickets?</span>
+                                    <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                                <div class="faq-body">
+                                    Navigate to the <a href="/tickets-page/" style="color: var(--primary-accent); font-weight: 600;">Tickets</a> section from the left sidebar. There you can create new tickets, set priority levels, assign team members, and track ticket status in real-time.
+                                </div>
+                            </div>
+
+                            <!-- FAQ Item 3 -->
+                            <div class="faq-item">
+                                <div class="faq-header" onclick="toggleFaq(this)">
+                                    <span>How do I update company settings and member permissions?</span>
+                                    <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                                <div class="faq-body">
+                                    Go to <a href="/settings-page/" style="color: var(--primary-accent); font-weight: 600;">Settings</a> to update company legal name, contact numbers, and industry settings. For user management, visit <a href="/users-page/" style="color: var(--primary-accent); font-weight: 600;">Users & Access</a>.
+                                </div>
+                            </div>
+
+                            <!-- FAQ Item 4 -->
+                            <div class="faq-item">
+                                <div class="faq-header" onclick="toggleFaq(this)">
+                                    <span>What email delivery service does TeamNext use?</span>
+                                    <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                                <div class="faq-body">
+                                    TeamNext ERP features an integrated Brevo HTTP API email dispatch engine with standard fallback support. All automated notifications, OTP verifications, and support inquiry alerts are processed seamlessly.
+                                </div>
+                            </div>
+
+                            <!-- FAQ Item 5 -->
+                            <div class="faq-item">
+                                <div class="faq-header" onclick="toggleFaq(this)">
+                                    <span>Where can I find financial and inventory reports?</span>
+                                    <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                </div>
+                                <div class="faq-body">
+                                    Financial management, invoicing, and expenses are located in the <a href="/finance-page/" style="color: var(--primary-accent); font-weight: 600;">Finance</a> module. Comprehensive system analytics and reporting can be exported from the <a href="/reports-page/" style="color: var(--primary-accent); font-weight: 600;">Reports</a> page.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Support Contact Form -->
+                <div>
+                    <div class="panel" id="contactFormCard">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span>Inquire / Send to Help Desk</span>
+                            </span>
+                        </div>
+                        <div class="panel-body">
+                            <p style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5;">
+                                Send your inquiry directly to our official support team at <strong style="color: var(--primary-accent);">main@teamnexterp.com</strong>.
+                            </p>
+
+                            <form id="helpForm" style="display: flex; flex-direction: column; gap: 12px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 12px; font-weight: 600;">Your Email Address</label>
+                                    <input type="email" id="contactEmail" value="{{ email }}" placeholder="name@company.com" required style="width: 100%; padding: 8px 12px; font-size: 13px;">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 12px; font-weight: 600;">Category</label>
+                                    <select id="contactCategory" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: white;">
+                                        <option value="General Technical Support">General Technical Support</option>
+                                        <option value="Billing & Account Inquiry">Billing & Account Inquiry</option>
+                                        <option value="Feature Request">Feature Request</option>
+                                        <option value="Bug Report">Bug Report</option>
+                                        <option value="Security / Access Issue">Security / Access Issue</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 12px; font-weight: 600;">Priority Level</label>
+                                    <select id="contactPriority" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background: white;">
+                                        <option value="Medium">Medium Priority</option>
+                                        <option value="Low">Low Priority</option>
+                                        <option value="High">High Priority</option>
+                                        <option value="Urgent">Urgent / System Down</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 12px; font-weight: 600;">Subject</label>
+                                    <input type="text" id="contactSubject" placeholder="Brief description of inquiry" required style="width: 100%; padding: 8px 12px; font-size: 13px;">
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 12px; font-weight: 600;">Detailed Message</label>
+                                    <textarea id="contactMessage" rows="4" placeholder="Describe how we can assist you..." required style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; resize: vertical;"></textarea>
+                                </div>
+
+                                <div id="formStatus" style="font-size: 12px; font-weight: 600; min-height: 18px;"></div>
+
+                                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 10px; font-size: 13.5px; font-weight: 600; gap: 8px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                    </svg>
+                                    <span>Send to main@teamnexterp.com</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function copySupportEmail() {
+            const email = "main@teamnexterp.com";
+            navigator.clipboard.writeText(email).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = 'Copied!';
+                btn.style.background = '#10B981';
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.style.background = 'var(--primary-accent, #2563eb)';
+                }, 2000);
+            }).catch(err => {
+                alert('Support email: ' + email);
+            });
+        }
+
+        function toggleFaq(headerEl) {
+            const item = headerEl.parentElement;
+            item.classList.toggle('open');
+        }
+
+        function filterFaqs() {
+            const query = document.getElementById('faqSearchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.faq-item');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        document.getElementById('helpForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('contactEmail').value.trim();
+            const category = document.getElementById('contactCategory').value;
+            const priority = document.getElementById('contactPriority').value;
+            const subject = document.getElementById('contactSubject').value.trim();
+            const message = document.getElementById('contactMessage').value.trim();
+            const statusEl = document.getElementById('formStatus');
+
+            if (!email || !subject || !message) {
+                statusEl.textContent = 'Please complete all required fields.';
+                statusEl.style.color = 'var(--danger-red, #ef4444)';
+                return;
+            }
+
+            statusEl.textContent = 'Dispatching inquiry to main@teamnexterp.com...';
+            statusEl.style.color = 'var(--text-muted, #6b7280)';
+
+            try {
+                const res = await fetch('/api/help-centre/contact/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        category: category,
+                        priority: priority,
+                        subject: subject,
+                        message: message
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    statusEl.textContent = 'Inquiry sent successfully to main@teamnexterp.com! We will get back to you shortly.';
+                    statusEl.style.color = 'var(--success-green, #10b981)';
+                    document.getElementById('contactSubject').value = '';
+                    document.getElementById('contactMessage').value = '';
+                } else {
+                    statusEl.textContent = data.message || 'Failed to send inquiry.';
+                    statusEl.style.color = 'var(--danger-red, #ef4444)';
+                }
+            } catch (err) {
+                statusEl.textContent = 'Error connecting to support service.';
+                statusEl.style.color = 'var(--danger-red, #ef4444)';
+            }
+        });
+    </script>
+</body>
+
+</html>

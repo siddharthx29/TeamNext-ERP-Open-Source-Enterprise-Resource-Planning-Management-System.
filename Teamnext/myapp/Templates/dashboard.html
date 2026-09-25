@@ -1,0 +1,454 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamNext - Enterprise Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .dashboard-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 18px;
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="dashboard" %}
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Dashboard" action_label="+ Quick Action" action_onclick="openQuickActionModal()" %}
+
+        <main class="content-area">
+            <!-- Greeting & Intro Header -->
+            <div class="page-intro">
+                <h1 class="page-greeting">Dashboard</h1>
+                <div class="page-subgreeting">
+                    Welcome back, {% if request.user.first_name %}{{ request.user.first_name }}{% elif email %}{{ email|slice:":8" }}{% else %}Aarav{% endif %}! Here's what's happening in your organization.
+                </div>
+            </div>
+
+            <!-- Top 5 Stat / KPI Cards (Matching Image) -->
+            <div class="stat-grid" style="grid-template-columns: repeat(5, 1fr);">
+                <!-- Stat 1: Total Employees -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-label">Total Employees</span>
+                        <div class="stat-icon-wrap stat-icon-blue">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ total_employees|default:"0" }}</div>
+                    <div class="stat-delta {% if total_employees > 0 %}delta-up{% endif %}">
+                        {% if total_employees > 0 %}<span>{{ total_employees }}</span> <span style="color:var(--text-muted); font-weight:400;">active member{{ total_employees|pluralize }}</span>{% else %}<span style="color:var(--text-muted); font-weight:400;">No employees yet</span>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Stat 2: Active Projects -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-label">Active Projects</span>
+                        <div class="stat-icon-wrap stat-icon-cyan">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ total_projects|default:"0" }}</div>
+                    <div class="stat-delta {% if total_projects > 0 %}delta-up{% endif %}">
+                        {% if total_projects > 0 %}<span>{{ total_projects }} active</span>{% else %}<span style="color:var(--text-muted); font-weight:400;">No active projects</span>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Stat 3: Total Revenue -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-label">Total Revenue</span>
+                        <div class="stat-icon-wrap stat-icon-green">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ total_revenue_formatted|default:"$0" }}</div>
+                    <div class="stat-delta {% if total_revenue_num > 0 %}delta-up{% endif %}">
+                        {% if total_revenue_num > 0 %}<span>Verified</span> <span style="color:var(--text-muted); font-weight:400;">from invoices</span>{% else %}<span style="color:var(--text-muted); font-weight:400;">$0 this period</span>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Stat 4: Open Tickets -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-label">Open Tickets</span>
+                        <div class="stat-icon-wrap stat-icon-rose">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ tickets_count|default:"0" }}</div>
+                    <div class="stat-delta">
+                        {% if tickets_count > 0 %}<span style="color:#EF4444; font-weight:600;">{{ tickets_count }} pending</span>{% else %}<span style="color:var(--text-muted); font-weight:400;">All caught up</span>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Stat 5: Pending Leaves -->
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <span class="stat-label">Pending Leaves</span>
+                        <div class="stat-icon-wrap stat-icon-amber">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                    </div>
+                    <div class="stat-value">{{ pending_leaves|default:"0" }}</div>
+                    <div class="stat-delta">
+                        {% if pending_leaves > 0 %}<span style="color:#F59E0B; font-weight:600;">{{ pending_leaves }} to review</span>{% else %}<span style="color:var(--text-muted); font-weight:400;">No pending requests</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Section: 3 Columns (Project Overview, Department Distribution, Recent Activity) -->
+            <div class="dashboard-grid-3">
+                <!-- Column 1: Project Overview -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Project Overview</span>
+                    </div>
+                    <div class="panel-body">
+                        {% if total_projects and total_projects > 0 %}
+                        <div class="donut-widget">
+                            <div class="donut-chart-box">
+                                <svg class="donut-svg" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="38" stroke="#F1F5F9"></circle>
+                                    <circle cx="50" cy="50" r="38" stroke="#3B82F6" stroke-dasharray="119.38 238.76" stroke-dashoffset="0"></circle>
+                                    <circle cx="50" cy="50" r="38" stroke="#06B6D4" stroke-dasharray="79.5 238.76" stroke-dashoffset="-119.38"></circle>
+                                </svg>
+                                <div class="donut-center-text">
+                                    <span class="donut-center-num">{{ total_projects }}</span>
+                                    <span class="donut-center-label">Total Projects</span>
+                                </div>
+                            </div>
+
+                            <div class="donut-legend">
+                                <div class="donut-legend-row">
+                                    <div class="donut-legend-label">
+                                        <div class="donut-legend-dot" style="background:#06B6D4;"></div>
+                                        <span>Completed</span>
+                                    </div>
+                                    <span class="donut-legend-val">{{ completed_projects|default:"0" }}</span>
+                                </div>
+                                <div class="donut-legend-row">
+                                    <div class="donut-legend-label">
+                                        <div class="donut-legend-dot" style="background:#3B82F6;"></div>
+                                        <span>In Progress</span>
+                                    </div>
+                                    <span class="donut-legend-val">{{ in_progress_projects|default:"0" }}</span>
+                                </div>
+                                <div class="donut-legend-row">
+                                    <div class="donut-legend-label">
+                                        <div class="donut-legend-dot" style="background:#F59E0B;"></div>
+                                        <span>On Hold</span>
+                                    </div>
+                                    <span class="donut-legend-val">{{ on_hold_projects|default:"0" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; text-align:center;">
+                            <div style="width:48px; height:48px; border-radius:50%; background:var(--bg-subtle, #f8fafc); border:1px dashed var(--border-color, #cbd5e1); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-muted);">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                            </div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">No Projects Yet</div>
+                            <div style="font-size:12px; color:var(--text-muted); max-width:220px; line-height:1.4; margin-bottom:14px;">Your workspace has no active projects. Create your first project to get started.</div>
+                            <a href="/projects-page/" class="btn btn-primary btn-sm" style="font-size:12px; text-decoration:none; padding:6px 14px; border-radius:6px; background:var(--primary-accent, #2563eb); color:#fff; display:inline-flex; align-items:center; gap:6px;">+ Create Project</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Column 2: Department Distribution -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Department Distribution</span>
+                    </div>
+                    <div class="panel-body" style="padding-top: 10px;">
+                        {% if dept_distribution %}
+                        <div class="bar-chart-wrap">
+                            {% for dept in dept_distribution %}
+                            <div class="bar-col">
+                                <span style="font-size:11px; font-weight:600; color:var(--text-secondary);">{{ dept.count }}</span>
+                                <div class="bar-track"><div class="bar-fill" style="height: {% if total_employees > 0 %}{% widthratio dept.count total_employees 100 %}{% else %}0{% endif %}%;"></div></div>
+                                <span class="bar-tag">{{ dept.name }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; text-align:center;">
+                            <div style="width:48px; height:48px; border-radius:50%; background:var(--bg-subtle, #f8fafc); border:1px dashed var(--border-color, #cbd5e1); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-muted);">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                            </div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">No Departments</div>
+                            <div style="font-size:12px; color:var(--text-muted); max-width:220px; line-height:1.4; margin-bottom:14px;">Set up departments in HR Management to track team allocations.</div>
+                            <a href="/hr-page/" class="btn btn-outline btn-sm" style="font-size:12px; text-decoration:none; padding:5px 12px; border-radius:6px; border:1px solid var(--border-color, #cbd5e1); color:var(--text-primary); display:inline-flex; align-items:center; gap:6px;">Manage Departments</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Column 3: Recent Activity -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Recent Activity</span>
+                    </div>
+                    <div class="panel-body">
+                        {% if recent_activities %}
+                        <div class="activity-list">
+                            {% for act in recent_activities %}
+                            <div class="activity-item">
+                                <div class="activity-icon-dot" style="background:var(--primary-accent, #3B82F6);"></div>
+                                <div class="activity-main">
+                                    <div class="activity-text"><strong>{{ act.title }}</strong>{% if act.message %} - {{ act.message }}{% endif %}</div>
+                                    <div class="activity-time">{{ act.time }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div style="text-align:center; margin-top:16px;">
+                            <a href="/analytics-page/" style="font-size:12px; color:var(--primary-accent); text-decoration:none; font-weight:600;">View All &rarr;</a>
+                        </div>
+                        {% else %}
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; text-align:center;">
+                            <div style="width:48px; height:48px; border-radius:50%; background:var(--bg-subtle, #f8fafc); border:1px dashed var(--border-color, #cbd5e1); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-muted);">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            </div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">No Recent Activity</div>
+                            <div style="font-size:12px; color:var(--text-muted); max-width:220px; line-height:1.4;">Live events, updates, and employee activities will be logged here.</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section: 3 Columns (Upcoming Events, My Tasks, Quick Actions) -->
+            <div class="dashboard-grid-3">
+                <!-- Column 1: Upcoming Events -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Upcoming Events</span>
+                    </div>
+                    <div class="panel-body">
+                        {% if upcoming_events %}
+                        <div class="event-list">
+                            {% for ev in upcoming_events %}
+                            <div class="event-card-item">
+                                <div class="event-date-box">
+                                    <span class="event-month">{{ ev.month }}</span>
+                                    <span class="event-day">{{ ev.day }}</span>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">{{ ev.title }}</div>
+                                    <div class="event-time">{{ ev.time }}</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div style="text-align:center; margin-top:16px;">
+                            <a href="/leaves-page/" style="font-size:12px; color:var(--primary-accent); text-decoration:none; font-weight:600;">View Calendar &rarr;</a>
+                        </div>
+                        {% else %}
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; text-align:center;">
+                            <div style="width:48px; height:48px; border-radius:50%; background:var(--bg-subtle, #f8fafc); border:1px dashed var(--border-color, #cbd5e1); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-muted);">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            </div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">No Upcoming Events</div>
+                            <div style="font-size:12px; color:var(--text-muted); max-width:220px; line-height:1.4; margin-bottom:14px;">Schedule meetings, reviews, and company milestones.</div>
+                            <a href="/social-page/" class="btn btn-outline btn-sm" style="font-size:12px; text-decoration:none; padding:5px 12px; border-radius:6px; border:1px solid var(--border-color, #cbd5e1); color:var(--text-primary); display:inline-flex; align-items:center; gap:6px;">Schedule Event</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Column 2: My Tasks -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">My Tasks</span>
+                    </div>
+                    <div class="panel-body">
+                        {% if my_tasks %}
+                        <div class="task-list">
+                            {% for t in my_tasks %}
+                            <div class="task-item">
+                                <div class="task-info">
+                                    <div class="task-name">{{ t.title }}</div>
+                                    <div class="task-sub">{{ t.project_name }}</div>
+                                </div>
+                                <div class="task-badges">
+                                    <span class="pill-priority {% if t.priority == 'High' %}priority-high{% elif t.priority == 'Low' %}priority-low{% else %}priority-med{% endif %}">{{ t.priority }}</span>
+                                    <span class="pill-due">{{ t.status }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div style="text-align:center; margin-top:16px;">
+                            <a href="/projects-page/" style="font-size:12px; color:var(--primary-accent); text-decoration:none; font-weight:600;">View All Tasks &rarr;</a>
+                        </div>
+                        {% else %}
+                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 16px; text-align:center;">
+                            <div style="width:48px; height:48px; border-radius:50%; background:var(--bg-subtle, #f8fafc); border:1px dashed var(--border-color, #cbd5e1); display:flex; align-items:center; justify-content:center; margin-bottom:12px; color:var(--text-muted);">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">All Caught Up!</div>
+                            <div style="font-size:12px; color:var(--text-muted); max-width:220px; line-height:1.4;">No open tasks or tickets currently assigned to you.</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Column 3: Quick Actions -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Quick Actions</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="quick-actions-list">
+                            <a href="/hr-page/" class="quick-action-link">
+                                <div class="quick-action-left">
+                                    <div class="quick-action-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                                    </div>
+                                    <div>
+                                        <div class="quick-action-title">Add New Employee</div>
+                                        <div class="quick-action-desc">Add a new team member</div>
+                                    </div>
+                                </div>
+                                <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+
+                            <a href="/projects-page/" class="quick-action-link">
+                                <div class="quick-action-left">
+                                    <div class="quick-action-icon" style="background:#ECFEFF; color:#0891B2;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                                    </div>
+                                    <div>
+                                        <div class="quick-action-title">Create Project</div>
+                                        <div class="quick-action-desc">Start a new project</div>
+                                    </div>
+                                </div>
+                                <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+
+                            <a href="/finance-page/" class="quick-action-link">
+                                <div class="quick-action-left">
+                                    <div class="quick-action-icon" style="background:#ECFDF5; color:#10B981;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                                    </div>
+                                    <div>
+                                        <div class="quick-action-title">Submit Expense</div>
+                                        <div class="quick-action-desc">Submit expense claim</div>
+                                    </div>
+                                </div>
+                                <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+
+                            <a href="/tickets-page/" class="quick-action-link">
+                                <div class="quick-action-left">
+                                    <div class="quick-action-icon" style="background:#FFF1F2; color:#E11D48;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"></path><line x1="12" y1="11" x2="12" y2="15"></line></svg>
+                                    </div>
+                                    <div>
+                                        <div class="quick-action-title">Create Ticket</div>
+                                        <div class="quick-action-desc">Report an issue</div>
+                                    </div>
+                                </div>
+                                <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Quick Action Modal -->
+    <div id="quickActionModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Enterprise Quick Action</div>
+                <button onclick="closeQuickActionModal()" style="background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:18px;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="quick-actions-list">
+                    <a href="/hr-page/" class="quick-action-link">
+                        <div class="quick-action-left">
+                            <div class="quick-action-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle></svg></div>
+                            <div>
+                                <div class="quick-action-title">Add Employee</div>
+                                <div class="quick-action-desc">Manage workforce & designations</div>
+                            </div>
+                        </div>
+                        <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                    <a href="/finance-page/" class="quick-action-link">
+                        <div class="quick-action-left">
+                            <div class="quick-action-icon" style="background:#ECFDF5; color:#10B981;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+                            <div>
+                                <div class="quick-action-title">Create Transaction / Invoice</div>
+                                <div class="quick-action-desc">Record income or operational expense</div>
+                            </div>
+                        </div>
+                        <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                    <a href="/tickets-page/" class="quick-action-link">
+                        <div class="quick-action-left">
+                            <div class="quick-action-icon" style="background:#FFF1F2; color:#E11D48;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"></path></svg></div>
+                            <div>
+                                <div class="quick-action-title">Submit Support Ticket</div>
+                                <div class="quick-action-desc">Escalate urgent operational blocker</div>
+                            </div>
+                        </div>
+                        <svg class="quick-action-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost btn-sm" onclick="closeQuickActionModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openQuickActionModal() {
+            document.getElementById('quickActionModal').classList.add('active');
+        }
+        function closeQuickActionModal() {
+            document.getElementById('quickActionModal').classList.remove('active');
+        }
+    </script>
+</body>
+
+</html>

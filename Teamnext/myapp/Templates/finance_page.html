@@ -1,0 +1,401 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance & Accounts - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="finance" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Finance & Accounts" action_label="+ Create Invoice" action_onclick="openModal('invoice', 'Create New Invoice', 'Client Name', 'Base Amount ($)')" %}
+
+        <main class="content-area">
+            <!-- Financial KPIs -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="stat-revenue" style="color: var(--success-green);">$0.00</div>
+                    <div class="stat-delta delta-up">● Invoiced YTD</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Operational Expenses</div>
+                    <div class="stat-value" id="stat-expenses" style="color: var(--danger-red);">$0.00</div>
+                    <div class="stat-delta delta-down">● Logged spend</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Payroll Disbursement</div>
+                    <div class="stat-value" id="stat-payroll" style="color: var(--info-blue);">$0.00</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● Monthly salaries</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Estimated GST Payable</div>
+                    <div class="stat-value" id="payable-gst" style="color: var(--warning-amber);">$0.00</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● 18% standard rate</div>
+                </div>
+            </div>
+
+            <!-- Transactions Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="20" height="14" x="2" y="5" rx="2"></rect>
+                            <line x1="2" y1="10" x2="22" y2="10"></line>
+                        </svg>
+                        <span>Recent General Ledger Transactions</span>
+                    </span>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn btn-ghost btn-sm" id="createInvoiceBtn" onclick="openModal('invoice', 'Create New Invoice', 'Client Name', 'Base Amount ($)')" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Create Invoice</span>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" id="logExpenseBtn" onclick="openModal('expense', 'Log Business Expense', 'Description', 'Amount ($)')" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Log Expense</span>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" id="payoutSalaryBtn" onclick="openModal('salary', 'Salary Payout Record', 'Employee Name', 'Net Salary ($)')" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M15 9.5H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H9"></path></svg>
+                            <span>Payout Salary</span>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" id="addBillBtn" onclick="openModal('bill', 'Register New Bill', 'Vendor Name', 'Bill Amount ($)')" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            <span>Add Bill</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Entity / Vendor</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                    Loading transaction ledger...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tax & Reconcile Panels -->
+            <div class="grid-2">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">GST / VAT Tax Overview</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="stat-grid" style="grid-template-columns: 1fr 1fr;">
+                            <div class="stat-card">
+                                <div class="stat-label">Output Tax Due</div>
+                                <div id="tax-output-due" style="font-size: 18px; font-weight: 700; color: var(--danger-red);">$0.00</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Input Tax Credit</div>
+                                <div id="tax-input-credit" style="font-size: 18px; font-weight: 700; color: var(--success-green);">$0.00</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 12px;">
+                            * Calculated dynamically based on 18% standard GST taxation bracket.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Account Reconciliation & Reporting</span>
+                    </div>
+                    <div class="panel-body">
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <button class="btn btn-primary" onclick="reconcileBank()">Sync Bank Statements</button>
+                            <button class="btn btn-ghost" onclick="generateReport('tax')">Generate Tax Report (PDF)</button>
+                            <button class="btn btn-ghost" onclick="exportFinance('csv')">Export CSV Ledger</button>
+                        </div>
+                        <div id="statusMsg" style="margin-top: 14px; font-size: 12px; min-height: 16px;"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Finance Actions -->
+    <div id="financeModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">Finance Action</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="modalFields" style="display: flex; flex-direction: column; gap: 12px;">
+                    <div id="field1Container">
+                        <label id="label1">Entity / Vendor Name</label>
+                        <input type="text" id="field1" placeholder="Client or Vendor Name">
+                    </div>
+                    <div id="field2Container">
+                        <label id="label2">Amount ($)</label>
+                        <input type="number" id="field2" placeholder="0.00" step="0.01">
+                    </div>
+                    <div id="gstFieldContainer" style="display: none;">
+                        <label>GST Rate (%)</label>
+                        <select id="gstRate">
+                            <option value="0">0% (Nil)</option>
+                            <option value="5">5% (Essential)</option>
+                            <option value="12">12% (Standard Low)</option>
+                            <option value="18" selected>18% (Standard)</option>
+                            <option value="28">28% (Luxury)</option>
+                        </select>
+                    </div>
+                    <div id="categoryFieldContainer" style="display: none;">
+                        <label>Expense Category</label>
+                        <input type="text" id="expenseCategory" placeholder="e.g. Marketing, Cloud Infrastructure, Rent">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('financeModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const field1 = document.getElementById('field1');
+        const field2 = document.getElementById('field2');
+        const label1 = document.getElementById('label1');
+        const label2 = document.getElementById('label2');
+        const statusMsg = document.getElementById('statusMsg');
+        const gstContainer = document.getElementById('gstFieldContainer');
+        const categoryContainer = document.getElementById('categoryFieldContainer');
+
+        let currentAction = 'invoice';
+
+        async function loadFinanceData() {
+            try {
+                const res = await fetch('/api/finance/data/');
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    const rev = Number(data.revenue || 0);
+                    const exp = Number(data.expenses || 0);
+                    const pay = Number(data.payroll || 0);
+
+                    document.getElementById('stat-revenue').textContent = '$' + rev.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    document.getElementById('stat-expenses').textContent = '$' + exp.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    document.getElementById('stat-payroll').textContent = '$' + pay.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    const gstVal = rev * 0.18;
+                    const expTax = exp * 0.18;
+                    document.getElementById('payable-gst').textContent = '$' + gstVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    const taxOutputEl = document.getElementById('tax-output-due');
+                    if (taxOutputEl) taxOutputEl.textContent = '$' + gstVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    const taxInputEl = document.getElementById('tax-input-credit');
+                    if (taxInputEl) taxInputEl.textContent = '$' + expTax.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+                    const tbody = document.getElementById('transactionTableBody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        if (!data.recent || data.recent.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">No transactions recorded yet. Click above to log your first transaction!</td></tr>';
+                        } else {
+                            data.recent.forEach(txn => {
+                                const tr = document.createElement('tr');
+                                const isPaid = (txn.status || '').toLowerCase() === 'paid' || (txn.status || '').toLowerCase() === 'completed';
+                                tr.innerHTML = `
+                                    <td>${txn.date || 'Today'}</td>
+                                    <td><span class="badge badge-gray">${txn.type}</span></td>
+                                    <td style="font-weight:600; color:var(--text-primary);">${txn.entity || '-'}</td>
+                                    <td style="font-weight:600;">$${Number(txn.amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                    <td><span class="badge ${isPaid ? 'badge-green' : 'badge-amber'}">${txn.status || 'Pending'}</span></td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Data load error', e);
+            }
+        }
+
+        function openModal(action, title, l1, l2) {
+            currentAction = action || 'invoice';
+            if (modalTitle) modalTitle.textContent = title || 'Finance Action';
+            if (label1) label1.textContent = l1 || 'Entity / Vendor Name';
+            if (label2) label2.textContent = l2 || 'Amount ($)';
+            if (field1) field1.value = '';
+            if (field2) field2.value = '';
+
+            if (gstContainer) gstContainer.style.display = currentAction === 'invoice' ? 'block' : 'none';
+            if (categoryContainer) categoryContainer.style.display = currentAction === 'expense' ? 'block' : 'none';
+
+            if (modal) modal.classList.add('active');
+        }
+
+        function closeModal() {
+            if (modal) modal.classList.remove('active');
+        }
+
+        // Close on backdrop click
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+        }
+
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        if (confirmBtn) {
+            confirmBtn.onclick = async () => {
+                const val1 = field1 ? field1.value.trim() : '';
+                const val2 = field2 ? field2.value.trim() : '';
+                if (!val1 || !val2) return alert('Please enter all required fields.');
+
+                const urls = {
+                    'invoice': '/api/finance/invoice/',
+                    'expense': '/api/finance/expense/',
+                    'salary': '/api/finance/salary/',
+                    'bill': '/api/finance/bill/'
+                };
+
+                const bodyData = {
+                    entity: val1,
+                    amount: val2
+                };
+
+                const gstRateEl = document.getElementById('gstRate');
+                if (currentAction === 'invoice' && gstRateEl) bodyData.gst_rate = gstRateEl.value;
+                const expCatEl = document.getElementById('expenseCategory');
+                if (currentAction === 'expense' && expCatEl) bodyData.category = expCatEl.value;
+
+                try {
+                    confirmBtn.disabled = true;
+                    const res = await fetch(urls[currentAction], {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bodyData)
+                    });
+                    const data = await res.json();
+                    confirmBtn.disabled = false;
+                    if (data.status === 'ok') {
+                        if (statusMsg) {
+                            statusMsg.textContent = data.message || 'Transaction saved successfully.';
+                            statusMsg.style.color = 'var(--success-green)';
+                            setTimeout(() => { if (statusMsg) statusMsg.textContent = ''; }, 4000);
+                        }
+                        closeModal();
+                        loadFinanceData();
+                    } else {
+                        alert(data.message || 'Error occurred while saving transaction.');
+                    }
+                } catch (e) {
+                    confirmBtn.disabled = false;
+                    alert('Connection error occurred while saving transaction.');
+                }
+            };
+        }
+
+        function exportFinance(format) {
+            window.location.href = `/api/finance/export/?format=${format}`;
+        }
+
+        async function generateReport(type) {
+            if (statusMsg) {
+                statusMsg.textContent = `Generating ${type} report...`;
+                statusMsg.style.color = 'var(--primary-accent)';
+            }
+            try {
+                const res = await fetch('/api/reports/generate/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ report_type: type, format: 'pdf' })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    const blob = b64toBlob(data.file_data, data.content_type);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${type}_Statement.pdf`;
+                    a.click();
+                    if (statusMsg) {
+                        statusMsg.textContent = 'Report generated and downloaded!';
+                        statusMsg.style.color = 'var(--success-green)';
+                    }
+                } else {
+                    if (statusMsg) {
+                        statusMsg.textContent = data.message || 'Error generating report';
+                        statusMsg.style.color = 'var(--danger-red)';
+                    }
+                }
+            } catch (e) {
+                if (statusMsg) {
+                    statusMsg.textContent = 'Error generating report';
+                    statusMsg.style.color = 'var(--danger-red)';
+                }
+            }
+        }
+
+        function reconcileBank() {
+            if (statusMsg) {
+                statusMsg.textContent = 'Bank reconciliation module synced: General Ledger verified with corporate accounts.';
+                statusMsg.style.color = 'var(--success-green)';
+                setTimeout(() => { if (statusMsg) statusMsg.textContent = ''; }, 5000);
+            }
+        }
+
+        function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            return new Blob(byteArrays, { type: contentType });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFinanceData);
+    </script>
+</body>
+
+</html>

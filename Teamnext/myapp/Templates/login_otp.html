@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login with OTP - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+</head>
+
+<body class="auth-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <div class="modal-card" style="max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);">
+        <div style="padding: 24px; text-align: center; background: #1C2333; color: #FFFFFF; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div class="brand-logo" style="margin: 0 auto 10px auto; width: 32px; height: 32px; font-size: 12px;">TN</div>
+            <div style="font-size: 16px; font-weight: 700; color: #FFFFFF;">OTP Authentication</div>
+            <div style="font-size: 11px; color: #8A96AB; margin-top: 4px;">Enter registered email to receive access code</div>
+        </div>
+
+        <div style="padding: 24px; background: #FFFFFF;">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="POST" action="{% url 'send_otp' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Registered Work Email</label>
+                    <input name="email" type="email" placeholder="name@company.com" required>
+                </div>
+                <input type="hidden" name="purpose" value="login">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 10px;">Send Verification Code</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 16px;">
+                <a href="/" style="color: var(--primary-accent); font-size: 12px; text-decoration: none; font-weight: 500;">
+                    ← Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

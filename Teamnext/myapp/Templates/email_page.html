@@ -1,0 +1,741 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Center - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .mail-card {
+            padding: 12px 14px;
+            border-radius: 8px;
+            background: #FAFBFD;
+            border: 1px solid var(--border-subtle);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mail-card:hover {
+            background: #F0F2F7;
+            border-color: var(--border-color);
+        }
+
+        .mail-card.new-highlight {
+            animation: highlightCard 1.5s ease-out;
+        }
+
+        @keyframes highlightCard {
+            0% { background: rgba(59, 130, 246, 0.25); border-color: var(--primary-accent); }
+            100% { background: #FAFBFD; border-color: var(--border-subtle); }
+        }
+
+        .mail-scroll {
+            max-height: 380px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* Inbound Receiving Guide Styles */
+        .guide-panel {
+            background: var(--bg-surface, #ffffff);
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-left: 4px solid var(--primary-accent, #2563eb);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s ease;
+        }
+
+        .guide-icon-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(37, 99, 235, 0.12);
+            color: var(--primary-accent, #2563eb);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .guide-status-pill {
+            font-size: 11px;
+            padding: 3px 9px;
+            background: rgba(16, 185, 129, 0.14);
+            color: #059669;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .guide-steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .guide-step-card {
+            background: var(--bg-card, #FAFBFD);
+            border: 1px solid var(--border-subtle, #e2e8f0);
+            border-radius: 8px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .guide-step-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-color: var(--primary-accent, #2563eb);
+        }
+
+        .guide-step-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .guide-step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary-accent, #2563eb);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .inbox-address-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-surface, #ffffff);
+            border: 1px solid var(--border-color, #cbd5e1);
+            padding: 5px 8px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        .inbox-email-code {
+            font-size: 11px;
+            font-family: monospace;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .inbox-count-pill {
+            display: inline-block;
+            background: var(--primary-accent, #2563eb);
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 12px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .spin-icon {
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .code-box-inline {
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 6px 8px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 11px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="email" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Email Center" action_label="+ Compose" action_onclick="openComposeModal()" %}
+
+        <main class="content-area">
+            <!-- Compose Box -->
+            <div class="panel" id="composeSection">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z"></path>
+                            <path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"></path>
+                        </svg>
+                        <span>Compose Enterprise Dispatch</span>
+                    </span>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <input id="to" placeholder="To: recipient@example.com">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <input id="subject" placeholder="Subject">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <textarea id="body" rows="5" placeholder="Write your email memo here..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <button id="sendBtn" class="btn btn-primary" onclick="sendEmail()">Send Email</button>
+                        <button id="saveBtn" class="btn btn-ghost" onclick="saveDraft()">Save Draft</button>
+                        <div id="status" style="font-size: 12px; margin-left: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clean Instruction: How External Parties Send Emails to this Inbox -->
+            <div class="panel" style="margin-bottom: 20px; padding: 14px 18px; border-left: 4px solid var(--primary-accent); background: #FAFBFD;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 13px;">
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">To receive emails from external parties into this inbox:</div>
+                        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; color: var(--text-secondary); font-size: 13px;">
+                            <span>Send to: <strong style="color: var(--primary-accent); font-family: monospace; font-size: 13px; background: rgba(37,99,235,0.08); padding: 2px 8px; border-radius: 4px;" id="inboundRecipientAddr">{{ email|default:"nsb566@gmail.com" }}</strong> <button type="button" class="btn btn-ghost btn-sm" onclick="copyInboxEmail()" style="font-size: 11px; padding: 2px 6px;"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#copy"></use></svg> Copy</button></span>
+                            <span>Subject: <strong style="color: var(--text-primary);">Any subject of their choice</strong></span>
+                        </div>
+                    </div>
+                    <div id="copyNotice" style="font-size: 11px; color: var(--success-green); font-weight: 600;"></div>
+                </div>
+            </div>
+
+            <!-- Mailboxes Row -->
+            <div class="grid-2">
+                <!-- Inbox -->
+                <div class="panel" id="inboxPanel">
+                    <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="panel-title" style="display: flex; align-items: center; gap: 6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+                                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                            </svg>
+                            <span>Inbox Feed</span>
+                            <span class="inbox-count-pill" id="inboxCountPill">0</span>
+                        </span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <button type="button" class="btn btn-ghost btn-sm" id="syncInboxBtn" onclick="manualRefreshInbox()" title="Check and refresh inbound emails" style="font-size: 11px; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;">
+                                <svg id="syncIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="23 4 23 10 17 10"></polyline>
+                                    <polyline points="1 20 1 14 7 14"></polyline>
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                </svg>
+                                <span id="syncBtnText">Sync Inbox</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="mail-scroll" id="inboxList">
+                            {% if inbox and inbox|length > 0 %}
+                            {% for m in inbox %}
+                            <div class="mail-card" onclick="openEmailObj(this)">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                    <strong class="em-subj" style="font-size: 13px; color: var(--text-primary);">{{ m.subject|default:"(No Subject)" }}</strong>
+                                    <span class="em-from" style="font-size: 11px; color: var(--text-muted);">{{ m.from }}</span>
+                                </div>
+                                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">{{ m.body|truncatechars:90 }}</div>
+                                <div class="em-body" style="display: none;">{{ m.body }}</div>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 20px;">No inbox messages.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drafts & Sent Tabs or Grid -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Drafts -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Saved Drafts</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="mail-scroll" id="draftsList" style="max-height: 160px;">
+                                {% if drafts and drafts|length > 0 %}
+                                {% for d in drafts %}
+                                <div class="mail-card" id="draft-item-{{ d.id }}" style="cursor: default;">
+                                    <div style="font-weight: 600; font-size: 12px; color: var(--text-primary);">{{ d.subject|default:"(No Subject)" }}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">To: {{ d.to }}</div>
+                                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">{{ d.body|truncatechars:60 }}</div>
+                                    <div style="margin-top: 6px; display: flex; gap: 6px;">
+                                        <button class="btn btn-ghost btn-sm loadDraftBtn" data-id="{{ d.id }}" data-to="{{ d.to }}" data-subject="{{ d.subject }}" data-body="{{ d.body }}">Load</button>
+                                        <button class="btn btn-danger btn-sm delDraftBtn" data-id="{{ d.id }}">Delete</button>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px;">No saved drafts.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sent Items -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">Sent Items</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="mail-scroll" style="max-height: 160px;">
+                                {% if sent and sent|length > 0 %}
+                                {% for m in sent %}
+                                <div class="mail-card" onclick="openEmailObj(this)">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                        <strong class="em-subj" style="font-size: 12px; color: var(--text-primary);">{{ m.subject|default:"(No Subject)" }}</strong>
+                                        <span class="em-from" style="font-size: 11px; color: var(--text-muted);">To: {{ m.to }}</span>
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--text-secondary);">{{ m.body|truncatechars:80 }}</div>
+                                    <div class="em-body" style="display: none;">{{ m.body }}</div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 12px;">No sent messages.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Email Modal Preview -->
+    <div id="emailModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <span class="modal-title" id="modalSubject">Subject</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 12px; font-size: 12px; color: var(--text-muted);">
+                    From / To: <strong id="modalFrom" style="color: var(--text-primary);">sender@example.com</strong>
+                </div>
+                <div id="modalBody" style="background: #FAFBFD; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 13px; line-height: 1.5; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+                    Email content...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inbound Webhook Specs Modal -->
+    <div id="specsModal" class="modal-backdrop">
+        <div class="modal-card" style="max-width: 650px;">
+            <div class="modal-header">
+                <span class="modal-title" style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                    <span>Inbound Email Webhook API Specification</span>
+                </span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeSpecsModal()">✕</button>
+            </div>
+            <div class="modal-body" style="font-size: 13px; line-height: 1.6;">
+                <p style="margin-bottom: 12px; color: var(--text-secondary);">
+                    External email services, transactional providers (Brevo, SendGrid Inbound Parse, Mailgun, Amazon SES), or custom background services can deliver emails directly into your TeamNext ERP inbox by sending an HTTP POST request.
+                </p>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>Inbound Webhook Endpoint:</strong>
+                    <div class="code-box-inline" style="margin-top: 4px; padding: 8px 10px;">
+                        POST /api/email/receive/
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <strong>JSON Payload Format:</strong>
+                    <pre style="background: #0f172a; color: #f8fafc; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; margin-top: 4px; line-height: 1.5;">{
+  "to": "{{ email|default:'user@teamnext.internal' }}",  <span style="color:#94a3b8;">// (Required) Your registered mailbox address</span>
+  "from": "client@external.com",                       <span style="color:#94a3b8;">// (Required) External sender email</span>
+  "subject": "Incoming Project Memo",                  <span style="color:#94a3b8;">// (Optional) Subject line</span>
+  "body": "Hello! Your external message arrived."      <span style="color:#94a3b8;">// (Required) Message body</span>
+}</pre>
+                </div>
+
+                <div style="margin-bottom: 8px;">
+                    <strong>cURL Test Snippet:</strong>
+                    <pre id="curlCommandText" style="background: #0f172a; color: #38bdf8; padding: 12px; border-radius: 6px; font-size: 11px; overflow-x: auto; margin-top: 4px; white-space: pre-wrap; line-height: 1.5;">curl -X POST http://127.0.0.1:8000/api/email/receive/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "to": "{{ email|default:'user@teamnext.internal' }}",
+    "from": "external-partner@example.com",
+    "subject": "Test Inbound Dispatch",
+    "body": "Hello from external email! TeamNext ERP inbound receiver confirmed."
+  }'</pre>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: space-between;">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyCurlExample()"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#copy"></use></svg> Copy cURL Command</button>
+                <button type="button" class="btn btn-ghost" onclick="closeSpecsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sendBtn = document.getElementById('sendBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const status = document.getElementById('status');
+        const inboxList = document.getElementById('inboxList');
+        const emailModal = document.getElementById('emailModal');
+        const specsModal = document.getElementById('specsModal');
+        const inboxCountPill = document.getElementById('inboxCountPill');
+        const syncIcon = document.getElementById('syncIcon');
+        const syncBtnText = document.getElementById('syncBtnText');
+        const userEmail = "{{ email|default:'' }}".trim().toLowerCase();
+
+        function openComposeModal() {
+            const toField = document.getElementById('to');
+            if (toField) {
+                toField.focus();
+                toField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function copyInboxEmail() {
+            const addr = document.getElementById('inboundRecipientAddr') ? document.getElementById('inboundRecipientAddr').innerText.trim() : userEmail;
+            if (!addr) return;
+            navigator.clipboard.writeText(addr).then(() => {
+                const notice = document.getElementById('copyNotice');
+                if (notice) {
+                    notice.textContent = '✓ Copied to clipboard!';
+                    setTimeout(() => { notice.textContent = ''; }, 2500);
+                }
+            }).catch(() => {
+                alert('Email address: ' + addr);
+            });
+        }
+
+        function copyCurlExample() {
+            const host = window.location.origin || 'http://127.0.0.1:8000';
+            const targetEmail = userEmail || 'your-account@teamnext.internal';
+            const curlCmd = `curl -X POST ${host}/api/email/receive/ \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "to": "${targetEmail}",\n    "from": "external-partner@example.com",\n    "subject": "Test Inbound Dispatch",\n    "body": "Hello from external email! TeamNext ERP inbound receiver confirmed."\n  }'`;
+
+            navigator.clipboard.writeText(curlCmd).then(() => {
+                alert('cURL command copied to clipboard!');
+            }).catch(() => {
+                prompt('Copy cURL command:', curlCmd);
+            });
+        }
+
+        function openSpecsModal() {
+            if (specsModal) specsModal.classList.add('active');
+        }
+
+        function closeSpecsModal() {
+            if (specsModal) specsModal.classList.remove('active');
+        }
+
+        if (specsModal) {
+            specsModal.addEventListener('click', (e) => {
+                if (e.target === specsModal) closeSpecsModal();
+            });
+        }
+
+        async function sendTestInboundEmail() {
+            const btn = document.getElementById('testInboundBtn');
+            const stat = document.getElementById('testInboundStatus');
+            const targetTo = userEmail || 'admin@teamnext.internal';
+
+            if (btn) btn.disabled = true;
+            if (stat) {
+                stat.textContent = 'Receiving test email into inbox...';
+                stat.style.color = 'var(--text-muted)';
+            }
+
+            try {
+                const payload = {
+                    to: targetTo,
+                    from: 'system-inbound@teamnext.internal',
+                    subject: 'Welcome to TeamNext ERP Mailbox (Inbound Verified)',
+                    body: `Hello!\n\nThis confirms that incoming mail delivery is successfully configured for ${targetTo}.\n\nWhen external email webhooks or internal team members send emails to this address, they will immediately appear in your Inbox Feed.\n\nVerified at: ${new Date().toLocaleString()}`
+                };
+
+                const res = await fetch('/api/email/receive/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    if (stat) {
+                        stat.textContent = '✓ Delivered to inbox successfully!';
+                        stat.style.color = 'var(--success-green, #10b981)';
+                    }
+                    await manualRefreshInbox(true);
+                } else {
+                    if (stat) {
+                        stat.textContent = data.message || 'Delivery error';
+                        stat.style.color = 'var(--danger-red, #ef4444)';
+                    }
+                }
+            } catch (err) {
+                if (stat) {
+                    stat.textContent = 'Connection error';
+                    stat.style.color = 'var(--danger-red, #ef4444)';
+                }
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function manualRefreshInbox(highlightFirst = false) {
+            if (syncIcon) syncIcon.classList.add('spin-icon');
+            if (syncBtnText) syncBtnText.textContent = 'Syncing...';
+
+            try {
+                const res = await fetch('/api/email/fetch/');
+                const data = await res.json();
+                if (data.status === 'ok' && Array.isArray(data.emails)) {
+                    renderInboxCards(data.emails, highlightFirst);
+                }
+            } catch (e) {
+                console.error('Fetch error:', e);
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('spin-icon');
+                if (syncBtnText) syncBtnText.textContent = 'Sync Inbox';
+            }
+        }
+
+        function updateInboxCount() {
+            if (!inboxList || !inboxCountPill) return;
+            const cards = inboxList.querySelectorAll('.mail-card');
+            inboxCountPill.textContent = cards.length;
+        }
+
+        function renderInboxCards(emails, highlightFirst = false) {
+            if (!inboxList) return;
+
+            if (!emails || emails.length === 0) {
+                inboxList.innerHTML = '<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 20px;">No inbox messages.</div>';
+                updateInboxCount();
+                return;
+            }
+
+            inboxList.innerHTML = '';
+            emails.forEach((m, idx) => {
+                const el = document.createElement('div');
+                el.className = 'mail-card' + (highlightFirst && idx === 0 ? ' new-highlight' : '');
+                el.onclick = () => openEmailObj(el);
+                el.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                        <strong class="em-subj" style="font-size: 13px; color: var(--text-primary);">${escapeHtml(m.subject || '(No Subject)')}</strong>
+                        <span class="em-from" style="font-size: 11px; color: var(--text-muted);">${escapeHtml(m.from || '')}</span>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(m.body || '').slice(0, 90)}</div>
+                    <div class="em-body" style="display: none;">${escapeHtml(m.body || '')}</div>
+                `;
+                inboxList.appendChild(el);
+            });
+
+            updateInboxCount();
+
+            if (highlightFirst) {
+                const inboxPanel = document.getElementById('inboxPanel');
+                if (inboxPanel) {
+                    inboxPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            updateInboxCount();
+            try {
+                const res = await fetch('/api/email/fetch/');
+                const data = await res.json();
+                if (data.status === 'ok' && data.emails && data.emails.length > 0) {
+                    renderInboxCards(data.emails);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function openEmailObj(el) {
+            const subj = el.querySelector('.em-subj') ? el.querySelector('.em-subj').innerText : 'Message';
+            const from = el.querySelector('.em-from') ? el.querySelector('.em-from').innerText : '';
+            const body = el.querySelector('.em-body') ? el.querySelector('.em-body').innerText : '';
+
+            document.getElementById('modalSubject').innerText = subj;
+            document.getElementById('modalFrom').innerText = from;
+            document.getElementById('modalBody').innerText = body;
+
+            if (emailModal) emailModal.classList.add('active');
+        }
+
+        function closeModal() {
+            if (emailModal) emailModal.classList.remove('active');
+        }
+
+        if (emailModal) {
+            emailModal.addEventListener('click', (e) => {
+                if (e.target === emailModal) closeModal();
+            });
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('to').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const body = document.getElementById('body').value.trim();
+            if (!to || !subject || !body) {
+                status.textContent = 'All fields required (Recipient, Subject, Body)';
+                status.style.color = 'var(--danger-red)';
+                return;
+            }
+            if (sendBtn) sendBtn.disabled = true;
+            status.textContent = 'Sending email...';
+            status.style.color = 'var(--text-muted)';
+            try {
+                const res = await fetch('/dashboard/send-email/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to, subject, body })
+                });
+                const data = await res.json();
+                if (data.status === 'success' || data.status === 'ok') {
+                    status.textContent = 'Email sent successfully!';
+                    status.style.color = 'var(--success-green)';
+                    document.getElementById('to').value = '';
+                    document.getElementById('subject').value = '';
+                    document.getElementById('body').value = '';
+                    setTimeout(() => location.reload(), 700);
+                } else {
+                    status.textContent = data.message || 'Failed to send';
+                    status.style.color = 'var(--danger-red)';
+                    if (sendBtn) sendBtn.disabled = false;
+                }
+            } catch (e) {
+                status.textContent = 'Error sending email';
+                status.style.color = 'var(--danger-red)';
+                if (sendBtn) sendBtn.disabled = false;
+            }
+        }
+
+        async function saveDraft() {
+            const to = document.getElementById('to').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const body = document.getElementById('body').value.trim();
+
+            if (!to && !subject && !body) {
+                status.textContent = 'Enter email details to save draft';
+                status.style.color = 'var(--danger-red)';
+                return;
+            }
+
+            try {
+                const res = await fetch('/email-page/save-draft/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save', to, subject, body })
+                });
+                const d = await res.json();
+                if (d.status === 'ok') {
+                    status.textContent = 'Draft saved successfully';
+                    status.style.color = 'var(--success-green)';
+                    setTimeout(() => location.reload(), 600);
+                } else {
+                    status.textContent = d.message || 'Failed to save draft';
+                    status.style.color = 'var(--danger-red)';
+                }
+            } catch (e) {
+                status.textContent = 'Connection error';
+                status.style.color = 'var(--danger-red)';
+            }
+        }
+
+        document.addEventListener('click', async function (e) {
+            if (e.target.classList.contains('loadDraftBtn')) {
+                const to = e.target.getAttribute('data-to') || '';
+                const subj = e.target.getAttribute('data-subject') || '';
+                const body = e.target.getAttribute('data-body') || '';
+
+                document.getElementById('to').value = to;
+                document.getElementById('subject').value = subj;
+                document.getElementById('body').value = body;
+                status.textContent = 'Draft loaded into composer';
+                status.style.color = 'var(--success-green)';
+                openComposeModal();
+                return;
+            }
+
+            if (e.target.classList.contains('delDraftBtn')) {
+                const draftId = e.target.getAttribute('data-id');
+                if (!draftId) return;
+
+                try {
+                    const res = await fetch('/email-page/save-draft/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id: draftId })
+                    });
+                    const d = await res.json();
+                    if (d.status === 'ok') {
+                        const card = document.getElementById(`draft-item-${draftId}`) || e.target.closest('.mail-card');
+                        if (card) card.remove();
+                    } else {
+                        alert(d.message || 'Delete failed');
+                    }
+                } catch (err) {
+                    alert('Connection error');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

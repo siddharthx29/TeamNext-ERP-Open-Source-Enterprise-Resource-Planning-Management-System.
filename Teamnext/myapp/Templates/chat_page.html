@@ -1,0 +1,1239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════════
+           TeamNext ERP Communication Module — Subtle Glassmorphism Layer
+           ═══════════════════════════════════════════════════════════════════════ */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 290px 1fr;
+            height: calc(100vh - 52px - 60px);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            overflow: hidden;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+            position: relative;
+        }
+
+        .chat-sidebar {
+            background: rgba(250, 251, 253, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-sidebar-header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .channel-list {
+            overflow-y: auto;
+            flex: 1;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .channel-item {
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .channel-item:hover {
+            background: rgba(240, 242, 247, 0.8);
+            color: var(--text-primary);
+        }
+
+        .channel-item.active {
+            background: rgba(37, 99, 235, 0.1);
+            color: var(--primary-accent);
+            font-weight: 600;
+        }
+
+        .channel-item-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .channel-item-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.65);
+            height: 100%;
+            position: relative;
+        }
+
+        .chat-top-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .chat-thread {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(250, 251, 253, 0.5);
+        }
+
+        .bubble {
+            max-width: 68%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.45;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            word-wrap: break-word;
+        }
+
+        .bubble-received {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            color: var(--text-primary);
+        }
+
+        .bubble-sent {
+            align-self: flex-end;
+            background: var(--primary-accent);
+            color: #FFFFFF;
+        }
+
+        .msg-meta {
+            font-size: 10px;
+            margin-top: 5px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .chat-input-bar-container {
+            border-top: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-input-bar input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.95);
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .chat-input-bar input[type="text"]:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .btn-icon-chat {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .btn-icon-chat:hover {
+            background: #F1F5F9;
+            color: var(--primary-accent);
+            border-color: var(--primary-accent);
+        }
+
+        /* Attachment preview pills */
+        .attachment-preview-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 2px 0;
+        }
+
+        .attachment-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: rgba(37, 99, 235, 0.08);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: 14px;
+            font-size: 11px;
+            color: var(--primary-accent);
+            max-width: 260px;
+        }
+
+        .attachment-pill-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .attachment-pill-remove {
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 1;
+            color: var(--text-muted);
+            transition: color 0.1s;
+        }
+
+        .attachment-pill-remove:hover {
+            color: var(--danger-red);
+        }
+
+        /* Media display inside chat bubble */
+        .msg-media-grid {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .media-img-wrapper {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 320px;
+            cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .media-img-preview {
+            width: 100%;
+            max-height: 240px;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+
+        .media-img-wrapper:hover .media-img-preview {
+            transform: scale(1.02);
+        }
+
+        .media-video-player {
+            max-width: 100%;
+            max-height: 250px;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.08);
+            outline: none;
+        }
+
+        .media-audio-player {
+            width: 100%;
+            min-width: 240px;
+            height: 36px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        /* Document download card inside bubble */
+        .bubble-doc-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .bubble-sent .bubble-doc-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #FFFFFF;
+        }
+
+        .bubble-doc-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .bubble-doc-details {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .bubble-doc-name {
+            font-weight: 500;
+            font-size: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bubble-doc-size {
+            font-size: 10px;
+            opacity: 0.75;
+        }
+
+        .bubble-doc-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .btn-doc-link {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .bubble-received .btn-doc-link {
+            background: var(--primary-accent-light);
+            color: var(--primary-accent);
+        }
+
+        .bubble-received .btn-doc-link:hover {
+            background: #DBEAFE;
+        }
+
+        .bubble-sent .btn-doc-link {
+            background: rgba(255, 255, 255, 0.25);
+            color: #FFFFFF;
+        }
+
+        .bubble-sent .btn-doc-link:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Lock icons (13-15px SVG) */
+        .channel-lock-icon {
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .channel-lock-icon.locked {
+            color: var(--warning-amber);
+        }
+
+        .channel-lock-icon.unlocked {
+            color: var(--success-green);
+        }
+
+        /* Locked channel state inside main chat area */
+        .locked-channel-banner {
+            margin: auto;
+            max-width: 380px;
+            text-align: center;
+            padding: 32px 24px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.85);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .locked-channel-banner-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--warning-bg);
+            color: var(--warning-amber);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 14px;
+        }
+
+        /* Glass Modals */
+        .glass-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .glass-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .glass-modal-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+
+        .glass-modal-overlay.active .glass-modal-card {
+            transform: scale(1);
+        }
+
+        .passcode-input-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .passcode-digit-input {
+            width: 52px;
+            height: 56px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            font-family: monospace;
+            border-radius: var(--radius-md);
+            border: 1.5px solid var(--border-color);
+            background: #FFFFFF;
+            color: var(--text-primary);
+            outline: none;
+            text-transform: uppercase;
+            transition: var(--transition);
+        }
+
+        .passcode-digit-input:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        /* Image Lightbox Modal */
+        .lightbox-card {
+            max-width: 85vw;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 75vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+        }
+
+        @media (max-width: 768px) {
+            .chat-layout {
+                grid-template-columns: 1fr;
+            }
+            .chat-sidebar {
+                display: none;
+            }
+            .chat-sidebar.mobile-open {
+                display: flex;
+                position: absolute;
+                inset: 0;
+                z-index: 100;
+            }
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="communication" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Communication" action_label="+ New Channel" action_onclick="document.getElementById('projectSelect') ? document.getElementById('projectSelect').focus() : null" %}
+
+        <main class="content-area">
+            <div class="chat-layout">
+                <!-- Channel Directory -->
+                <div class="chat-sidebar" id="chatSidebar">
+                    <div class="chat-sidebar-header">
+                        <span>Active Channels</span>
+                        <span class="badge badge-gray">{{ projects_data|length }} channels</span>
+                    </div>
+                    <div class="channel-list" id="channelListContainer">
+                        {% for p in projects_data %}
+                        <div class="channel-item {% if forloop.first %}active{% endif %}" 
+                             data-id="{{ p.id }}" 
+                             data-name="{{ p.name|escapejs }}"
+                             data-locked="{{ p.is_locked|yesno:'true,false' }}"
+                             data-unlocked="{{ p.is_unlocked|yesno:'true,false' }}"
+                             onclick="selectChannel('{{ p.id }}', '{{ p.name|escapejs }}', {{ p.is_locked|yesno:'true,false' }}, {{ p.is_unlocked|yesno:'true,false' }}, this)">
+                            <div class="channel-item-left">
+                                <span style="font-weight: 500;"># {{ p.name }}</span>
+                            </div>
+                            <div class="channel-item-right">
+                                {% if p.is_locked %}
+                                    {% if p.is_unlocked %}
+                                        <span class="channel-lock-icon unlocked" title="Unlocked in this session">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                                        </span>
+                                    {% else %}
+                                        <span class="channel-lock-icon locked" title="Channel Locked">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
+                                <span class="badge badge-gray">{{ p.department_name }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div style="font-size: 11px; color: var(--text-muted); padding: 12px;">No channels available</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Chat Room Main Thread -->
+                <div class="chat-main">
+                    <div class="chat-top-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="channelTitle" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
+                                        # {% if projects_data.0 %}{{ projects_data.0.name }}{% else %}No Channel Selected{% endif %}
+                                    </span>
+                                    <span id="headerLockBadge" style="display: none;"></span>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted);">Real-time encrypted team messaging & media storage</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            {% if is_admin %}
+                            <button id="adminLockBtn" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 5px;" onclick="openLockSettingsModal()">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                Lock Settings
+                            </button>
+                            {% endif %}
+                            <span class="badge badge-green">● Connected</span>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages Thread -->
+                    <div id="chatArea" class="chat-thread">
+                        <!-- Dynamically populated or locked placeholder -->
+                    </div>
+
+                    <!-- Chat Composer -->
+                    <div class="chat-input-bar-container" id="chatInputContainer">
+                        <div id="attachmentPreviewArea" class="attachment-preview-area" style="display: none;"></div>
+                        <div class="chat-input-bar">
+                            <input type="file" id="mediaFileInput" multiple style="display: none;" onchange="handleFilesSelected(this.files)" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.zip">
+                            
+                            <button type="button" class="btn-icon-chat" id="attachBtn" title="Attach file or media" onclick="document.getElementById('mediaFileInput').click()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                </svg>
+                            </button>
+
+                            <input id="chatInput" type="text" placeholder="Send a message or media to this channel..." autocomplete="off">
+                            <button id="sendChatBtn" class="btn btn-primary" style="display: flex; align-items: center; gap: 6px;">
+                                <span>Send</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 4-Character Hex Unlock Modal -->
+    <div id="unlockModal" class="glass-modal-overlay">
+        <div class="glass-modal-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 32px; height: 32px; border-radius: 6px; background: var(--warning-bg); color: var(--warning-amber); display: flex; align-items: center; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Channel Locked</h4>
+                        <div id="unlockChannelSubtitle" style="font-size: 11px; color: var(--text-muted);">Enter 4-character hex passcode</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-icon-chat" style="width: 28px; height: 28px; border: none;" onclick="closeUnlockModal()">✕</button>
+            </div>
+
+            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
+                This communication channel is protected. Please enter the 4-character passcode (0-9, A-F) to unlock it for your current session.
+            </div>
+
+            <div class="passcode-input-container">
+                <input type="text" maxlength="1" class="passcode-digit-input" id="hexDigit0" autofocus autocomplete="off">
+                <input type="text" maxlength="1" class="passcode-digit-input" id="hexDigit1" autocomplete="off">
+                <input type="text" maxlength="1" class="passcode-digit-input" id="hexDigit2" autocomplete="off">
+                <input type="text" maxlength="1" class="passcode-digit-input" id="hexDigit3" autocomplete="off">
+            </div>
+
+            <div id="unlockErrorMsg" style="display: none; font-size: 11px; color: var(--danger-red); margin-bottom: 14px; text-align: center;"></div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn btn-secondary" onclick="closeUnlockModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitUnlockBtn" onclick="submitPasscodeUnlock()">Unlock Channel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Channel Lock Settings Modal -->
+    <div id="lockSettingsModal" class="glass-modal-overlay">
+        <div class="glass-modal-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 32px; height: 32px; border-radius: 6px; background: var(--primary-accent-light); color: var(--primary-accent); display: flex; align-items: center; justify-content: center;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Channel Lock Settings</h4>
+                        <div id="settingsChannelName" style="font-size: 11px; color: var(--text-muted);">Manage channel access control</div>
+                    </div>
+                </div>
+                <button type="button" class="btn-icon-chat" style="width: 28px; height: 28px; border: none;" onclick="closeLockSettingsModal()">✕</button>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                    <input type="checkbox" id="enableLockCheckbox" onchange="toggleLockInputs(this.checked)">
+                    <span>Enable Channel Lock Protection</span>
+                </label>
+            </div>
+
+            <div id="lockPasscodeConfigSection" style="display: none; margin-bottom: 16px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">
+                    Set or change the 4-character hexadecimal passcode (0-9, A-F):
+                </div>
+                <input type="text" id="adminPasscodeInput" maxlength="4" placeholder="e.g. A3F9" style="width: 100%; padding: 8px 12px; font-family: monospace; font-size: 15px; font-weight: 700; text-transform: uppercase; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); text-align: center; letter-spacing: 4px;">
+                <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Passcode is securely hashed with PBKDF2/SHA256 before storage.</div>
+            </div>
+
+            <div id="lockSettingsErrorMsg" style="display: none; font-size: 11px; color: var(--danger-red); margin-bottom: 12px;"></div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" class="btn btn-secondary" onclick="closeLockSettingsModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveLockSettingsBtn" onclick="saveChannelLockSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Image Viewer Modal -->
+    <div id="imageLightboxModal" class="glass-modal-overlay" onclick="closeLightbox(event)">
+        <div class="lightbox-card">
+            <img id="lightboxImg" class="lightbox-img" src="" alt="Preview">
+            <div style="display: flex; gap: 10px;">
+                <a id="lightboxDownloadBtn" href="#" class="btn btn-primary" download style="font-size: 12px; padding: 6px 14px;">Download Full Image</a>
+                <button type="button" class="btn btn-secondary" onclick="closeLightbox(null, true)">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProjectId = '{% if projects_data.0 %}{{ projects_data.0.id }}{% endif %}';
+        let currentProjectName = '{% if projects_data.0 %}{{ projects_data.0.name|escapejs }}{% endif %}';
+        let currentProjectIsLocked = {% if projects_data.0.is_locked %}true{% else %}false{% endif %};
+        let currentProjectIsUnlocked = {% if projects_data.0.is_unlocked %}true{% else %}false{% endif %};
+
+        const chatArea = document.getElementById('chatArea');
+        const chatInput = document.getElementById('chatInput');
+        const sendChatBtn = document.getElementById('sendChatBtn');
+        const channelTitle = document.getElementById('channelTitle');
+        const headerLockBadge = document.getElementById('headerLockBadge');
+        const currentUserEmail = "{{ email|default:'' }}".toLowerCase();
+        
+        let pendingFiles = [];
+        let pollingInterval = null;
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return 'Just now';
+            try {
+                const date = new Date(timestamp * 1000);
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            } catch (e) {
+                return 'Just now';
+            }
+        }
+
+        function updateHeaderLockState() {
+            if (currentProjectIsLocked) {
+                headerLockBadge.style.display = 'inline-flex';
+                if (currentProjectIsUnlocked) {
+                    headerLockBadge.innerHTML = `<span class="badge badge-green" style="font-size:10px; display:inline-flex; align-items:center; gap:3px;">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+                        Unlocked
+                    </span>`;
+                } else {
+                    headerLockBadge.innerHTML = `<span class="badge badge-amber" style="font-size:10px; display:inline-flex; align-items:center; gap:3px;">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        Locked
+                    </span>`;
+                }
+            } else {
+                headerLockBadge.style.display = 'none';
+            }
+        }
+
+        function selectChannel(pId, pName, isLocked, isUnlocked, elem) {
+            currentProjectId = pId;
+            currentProjectName = pName;
+            currentProjectIsLocked = !!isLocked;
+            currentProjectIsUnlocked = !!isUnlocked;
+
+            if (elem) {
+                document.querySelectorAll('.channel-item').forEach(c => c.classList.remove('active'));
+                elem.classList.add('active');
+            }
+            if (channelTitle && pName) {
+                channelTitle.textContent = '# ' + pName;
+            }
+            updateHeaderLockState();
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            if (!currentProjectId) {
+                if (chatArea) chatArea.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-muted); font-size:12px;">No active channels. Create a project first.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/chat/messages/?project=${encodeURIComponent(currentProjectId)}`);
+                const data = await res.json();
+
+                if (data.status === 'locked') {
+                    currentProjectIsLocked = true;
+                    currentProjectIsUnlocked = false;
+                    updateHeaderLockState();
+                    renderLockedChannelBanner();
+                    return;
+                }
+
+                if (data.status === 'ok') {
+                    currentProjectIsLocked = !!data.is_locked;
+                    currentProjectIsUnlocked = !!data.is_unlocked;
+                    updateHeaderLockState();
+
+                    if (!data.messages || data.messages.length === 0) {
+                        chatArea.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted); font-size:12px;">No messages in this channel yet. Start the conversation or share a file!</div>';
+                        return;
+                    }
+
+                    chatArea.innerHTML = data.messages.map(m => {
+                        const isSelf = (m.email || '').toLowerCase() === currentUserEmail;
+                        const timeDisplay = formatTime(m.time);
+
+                        let mediaHtml = '';
+                        if (m.media && m.media.length > 0) {
+                            mediaHtml = `<div class="msg-media-grid">` + m.media.map(med => {
+                                if (med.is_image) {
+                                    return `
+                                        <div class="media-img-wrapper" onclick="openLightbox('${med.url}', '${escapeHtml(med.filename)}')">
+                                            <img src="${med.url}" alt="${escapeHtml(med.filename)}" class="media-img-preview" loading="lazy">
+                                        </div>
+                                    `;
+                                } else if (med.is_video) {
+                                    return `
+                                        <video controls class="media-video-player" preload="metadata">
+                                            <source src="${med.url}" type="${med.content_type || 'video/mp4'}">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    `;
+                                } else if (med.is_audio) {
+                                    return `
+                                        <audio controls class="media-audio-player" preload="metadata">
+                                            <source src="${med.url}" type="${med.content_type || 'audio/mpeg'}">
+                                            Your browser does not support the audio tag.
+                                        </audio>
+                                    `;
+                                } else {
+                                    return `
+                                        <div class="bubble-doc-card">
+                                            <span class="bubble-doc-icon"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg></span>
+                                            <div class="bubble-doc-details">
+                                                <div class="bubble-doc-name" title="${escapeHtml(med.filename)}">${escapeHtml(med.filename)}</div>
+                                                <div class="bubble-doc-size">${med.formatted_size || ''}</div>
+                                            </div>
+                                            <div class="bubble-doc-actions">
+                                                <a href="${med.url}" target="_blank" class="btn-doc-link">Open</a>
+                                                <a href="${med.download_url}" class="btn-doc-link">Download</a>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                            }).join('') + `</div>`;
+                        }
+
+                        return `
+                            <div class="bubble ${isSelf ? 'bubble-sent' : 'bubble-received'}">
+                                ${!isSelf ? `<div style="font-size:11px; font-weight:600; color:var(--primary-accent); margin-bottom:2px;">${escapeHtml(m.user)}</div>` : ''}
+                                ${m.text ? `<div>${escapeHtml(m.text)}</div>` : ''}
+                                ${mediaHtml}
+                                <div class="msg-meta" style="${isSelf ? 'justify-content:flex-end;' : ''}">${timeDisplay}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                } else {
+                    if (data.message && data.message.includes('restricted')) {
+                        chatArea.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger-red); font-size:12px;">${escapeHtml(data.message)}</div>`;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderLockedChannelBanner() {
+            chatArea.innerHTML = `
+                <div class="locked-channel-banner">
+                    <div class="locked-channel-banner-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    </div>
+                    <h3 style="font-size: 15px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary);">Channel Protected</h3>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 18px; line-height: 1.45;">
+                        This channel is locked. Conversation history, files, and messaging are encrypted until unlocked with the 4-character passcode.
+                    </p>
+                    <button class="btn btn-primary" onclick="openUnlockModal()" style="font-size: 12px; padding: 6px 16px;">
+                        Enter Passcode
+                    </button>
+                </div>
+            `;
+        }
+
+        /* ── File Selection & Attachment Handling ───────────────────────────── */
+        function handleFilesSelected(files) {
+            if (!files || files.length === 0) return;
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.size > 25 * 1024 * 1024) {
+                    alert(`File "${file.name}" exceeds the 25MB upload limit.`);
+                    continue;
+                }
+                pendingFiles.push(file);
+            }
+            renderAttachmentPreviews();
+        }
+
+        function removePendingFile(index) {
+            pendingFiles.splice(index, 1);
+            renderAttachmentPreviews();
+        }
+
+        function renderAttachmentPreviews() {
+            const previewArea = document.getElementById('attachmentPreviewArea');
+            if (pendingFiles.length === 0) {
+                previewArea.style.display = 'none';
+                previewArea.innerHTML = '';
+                return;
+            }
+
+            previewArea.style.display = 'flex';
+            previewArea.innerHTML = pendingFiles.map((f, idx) => `
+                <div class="attachment-pill">
+                    <span class="attachment-pill-name"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#paperclip"></use></svg> ${escapeHtml(f.name)} (${(f.size / 1024).toFixed(0)} KB)</span>
+                    <span class="attachment-pill-remove" onclick="removePendingFile(${idx})" title="Remove">✕</span>
+                </div>
+            `).join('');
+        }
+
+        /* ── Send Message & Media ───────────────────────────────────────────── */
+        if (sendChatBtn) {
+            sendChatBtn.onclick = async () => {
+                const text = chatInput.value.trim();
+                if (!text && pendingFiles.length === 0) return;
+                if (!currentProjectId) {
+                    alert('Please select a channel first');
+                    return;
+                }
+
+                if (currentProjectIsLocked && !currentProjectIsUnlocked) {
+                    openUnlockModal();
+                    return;
+                }
+
+                try {
+                    let res;
+                    if (pendingFiles.length > 0) {
+                        const formData = new FormData();
+                        formData.append('project', currentProjectId);
+                        formData.append('text', text);
+                        for (let i = 0; i < pendingFiles.length; i++) {
+                            formData.append('files', pendingFiles[i]);
+                        }
+
+                        res = await fetch('/api/chat/messages/', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } else {
+                        res = await fetch('/api/chat/messages/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ project: currentProjectId, text: text })
+                        });
+                    }
+
+                    const data = await res.json();
+                    if (data.status === 'ok') {
+                        chatInput.value = '';
+                        pendingFiles = [];
+                        renderAttachmentPreviews();
+                        loadMessages();
+                    } else if (data.status === 'locked') {
+                        currentProjectIsUnlocked = false;
+                        openUnlockModal();
+                    } else {
+                        alert(data.message || 'Error sending message');
+                    }
+                } catch (e) {
+                    alert('Connection error. Please try again.');
+                }
+            };
+        }
+
+        if (chatInput) {
+            chatInput.onkeypress = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendChatBtn.click();
+                }
+            };
+        }
+
+        /* ── 4-Character Hex Unlock Modal Logic ────────────────────────────── */
+        const unlockModal = document.getElementById('unlockModal');
+        const hexInputs = [
+            document.getElementById('hexDigit0'),
+            document.getElementById('hexDigit1'),
+            document.getElementById('hexDigit2'),
+            document.getElementById('hexDigit3')
+        ];
+
+        function openUnlockModal() {
+            document.getElementById('unlockChannelSubtitle').textContent = `# ${currentProjectName} passcode`;
+            document.getElementById('unlockErrorMsg').style.display = 'none';
+            hexInputs.forEach(input => input.value = '');
+            unlockModal.classList.add('active');
+            setTimeout(() => hexInputs[0].focus(), 50);
+        }
+
+        function closeUnlockModal() {
+            unlockModal.classList.remove('active');
+        }
+
+        hexInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const val = e.target.value;
+                // Allow only hex chars 0-9, A-F
+                const clean = val.replace(/[^0-9a-fA-F]/g, '').toUpperCase();
+                input.value = clean.slice(-1);
+
+                if (clean && index < 3) {
+                    hexInputs[index + 1].focus();
+                }
+                if (index === 3 && hexInputs.every(i => i.value.length === 1)) {
+                    submitPasscodeUnlock();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !input.value && index > 0) {
+                    hexInputs[index - 1].focus();
+                } else if (e.key === 'Enter') {
+                    submitPasscodeUnlock();
+                }
+            });
+
+            input.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                const clean = pasteData.replace(/[^0-9a-fA-F]/g, '').toUpperCase();
+                for (let i = 0; i < Math.min(clean.length, 4); i++) {
+                    hexInputs[i].value = clean[i];
+                }
+                if (clean.length >= 4) {
+                    hexInputs[3].focus();
+                    submitPasscodeUnlock();
+                } else if (clean.length > 0) {
+                    hexInputs[Math.min(clean.length, 3)].focus();
+                }
+            });
+        });
+
+        async function submitPasscodeUnlock() {
+            const code = hexInputs.map(i => i.value).join('');
+            const errorElem = document.getElementById('unlockErrorMsg');
+
+            if (code.length !== 4 || !/^[0-9A-Fa-f]{4}$/.test(code)) {
+                errorElem.textContent = 'Please enter a 4-character hexadecimal passcode (0-9, A-F).';
+                errorElem.style.display = 'block';
+                return;
+            }
+
+            errorElem.style.display = 'none';
+            try {
+                const res = await fetch(`/api/chat/unlock/${encodeURIComponent(currentProjectId)}/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passcode: code })
+                });
+                const data = await res.json();
+
+                if (data.status === 'ok') {
+                    currentProjectIsUnlocked = true;
+                    closeUnlockModal();
+                    
+                    // Update active channel item lock icon in sidebar
+                    const activeElem = document.querySelector(`.channel-item[data-id="${currentProjectId}"]`);
+                    if (activeElem) {
+                        activeElem.setAttribute('data-unlocked', 'true');
+                        const lockIcon = activeElem.querySelector('.channel-lock-icon');
+                        if (lockIcon) {
+                            lockIcon.className = 'channel-lock-icon unlocked';
+                            lockIcon.title = 'Unlocked for this session';
+                            lockIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
+                        }
+                    }
+
+                    updateHeaderLockState();
+                    loadMessages();
+                } else {
+                    errorElem.textContent = data.message || 'Incorrect passcode. Access denied.';
+                    errorElem.style.display = 'block';
+                    hexInputs.forEach(i => i.value = '');
+                    hexInputs[0].focus();
+                }
+            } catch (e) {
+                errorElem.textContent = 'Network error while verifying passcode.';
+                errorElem.style.display = 'block';
+            }
+        }
+
+        /* ── Admin Lock Settings Modal Logic ───────────────────────────────── */
+        const lockSettingsModal = document.getElementById('lockSettingsModal');
+        const enableLockCheckbox = document.getElementById('enableLockCheckbox');
+        const lockPasscodeConfigSection = document.getElementById('lockPasscodeConfigSection');
+        const adminPasscodeInput = document.getElementById('adminPasscodeInput');
+        const lockSettingsErrorMsg = document.getElementById('lockSettingsErrorMsg');
+
+        function toggleLockInputs(enabled) {
+            lockPasscodeConfigSection.style.display = enabled ? 'block' : 'none';
+        }
+
+        async function openLockSettingsModal() {
+            if (!currentProjectId) return;
+            document.getElementById('settingsChannelName').textContent = `# ${currentProjectName} access settings`;
+            lockSettingsErrorMsg.style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/chat/lock-settings/${encodeURIComponent(currentProjectId)}/`);
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    enableLockCheckbox.checked = !!data.is_locked;
+                    toggleLockInputs(data.is_locked);
+                    adminPasscodeInput.value = '';
+                    lockSettingsModal.classList.add('active');
+                } else {
+                    alert(data.message || 'Error fetching channel settings');
+                }
+            } catch (e) {
+                alert('Connection error');
+            }
+        }
+
+        function closeLockSettingsModal() {
+            lockSettingsModal.classList.remove('active');
+        }
+
+        async function saveChannelLockSettings() {
+            const isLocked = enableLockCheckbox.checked;
+            const passcode = adminPasscodeInput.value.trim().toUpperCase();
+
+            if (isLocked && passcode && !/^[0-9A-F]{4}$/.test(passcode)) {
+                lockSettingsErrorMsg.textContent = 'Passcode must be exactly 4 hexadecimal characters (0-9, A-F).';
+                lockSettingsErrorMsg.style.display = 'block';
+                return;
+            }
+
+            lockSettingsErrorMsg.style.display = 'none';
+
+            try {
+                const res = await fetch(`/api/chat/lock-settings/${encodeURIComponent(currentProjectId)}/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_locked: isLocked, passcode: passcode })
+                });
+                const data = await res.json();
+
+                if (data.status === 'ok') {
+                    currentProjectIsLocked = data.is_locked;
+                    if (data.is_locked) {
+                        currentProjectIsUnlocked = true;
+                    }
+                    closeLockSettingsModal();
+                    
+                    // Reload channel list metadata or update active DOM item
+                    const activeElem = document.querySelector(`.channel-item[data-id="${currentProjectId}"]`);
+                    if (activeElem) {
+                        activeElem.setAttribute('data-locked', data.is_locked ? 'true' : 'false');
+                        const rightContainer = activeElem.querySelector('.channel-item-right');
+                        let lockIcon = activeElem.querySelector('.channel-lock-icon');
+                        
+                        if (data.is_locked) {
+                            if (!lockIcon) {
+                                lockIcon = document.createElement('span');
+                                rightContainer.insertBefore(lockIcon, rightContainer.firstChild);
+                            }
+                            lockIcon.className = 'channel-lock-icon unlocked';
+                            lockIcon.title = 'Unlocked for this session';
+                            lockIcon.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>`;
+                        } else {
+                            if (lockIcon) lockIcon.remove();
+                        }
+                    }
+
+                    updateHeaderLockState();
+                    loadMessages();
+                } else {
+                    lockSettingsErrorMsg.textContent = data.message || 'Error saving settings';
+                    lockSettingsErrorMsg.style.display = 'block';
+                }
+            } catch (e) {
+                lockSettingsErrorMsg.textContent = 'Network error while updating lock settings.';
+                lockSettingsErrorMsg.style.display = 'block';
+            }
+        }
+
+        /* ── Image Lightbox Modal ───────────────────────────────────────────── */
+        const lightboxModal = document.getElementById('imageLightboxModal');
+        const lightboxImg = document.getElementById('lightboxImg');
+        const lightboxDownloadBtn = document.getElementById('lightboxDownloadBtn');
+
+        function openLightbox(url, filename) {
+            lightboxImg.src = url;
+            lightboxDownloadBtn.href = url + (url.includes('?') ? '&' : '?') + 'download=1';
+            lightboxDownloadBtn.setAttribute('download', filename || 'image');
+            lightboxModal.classList.add('active');
+        }
+
+        function closeLightbox(event, force) {
+            if (force || (event && event.target === lightboxModal)) {
+                lightboxModal.classList.remove('active');
+            }
+        }
+
+        /* ── Initial Load & Auto-polling ────────────────────────────────────── */
+        if (currentProjectId) {
+            updateHeaderLockState();
+            loadMessages();
+            pollingInterval = setInterval(loadMessages, 4000);
+        }
+    </script>
+</body>
+
+</html>

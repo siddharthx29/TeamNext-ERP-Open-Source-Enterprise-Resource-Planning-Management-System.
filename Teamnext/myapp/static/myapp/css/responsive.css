@@ -1,0 +1,129 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   TeamNext ERP — Corporate Command Center Responsive Styles
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .collab-hub {
+    grid-template-columns: 1fr !important;
+  }
+  .chat-layout {
+    grid-template-columns: 240px 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Layout collapses to 48px mini icon-only sidebar */
+  body.app-layout {
+    grid-template-columns: 48px 1fr !important;
+  }
+
+  .sidebar {
+    width: 48px !important;
+    overflow-x: hidden;
+  }
+
+  .brand-block {
+    padding: 12px 10px !important;
+    justify-content: center;
+  }
+
+  .brand-text {
+    display: none !important;
+  }
+
+  .user-block {
+    margin: 4px 6px 12px 6px !important;
+    padding: 6px !important;
+    justify-content: center;
+  }
+
+  .user-info {
+    display: none !important;
+  }
+
+  .nav-section-label {
+    display: none !important;
+  }
+
+  .sidebar-nav {
+    padding: 0 4px 20px 4px !important;
+    align-items: center;
+  }
+
+  .nav-item {
+    padding: 10px !important;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+  }
+
+  .nav-text {
+    display: none !important;
+  }
+
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  /* Main area */
+  .topbar {
+    padding: 0 16px !important;
+  }
+
+  .content-area {
+    padding: 14px 14px 30px 14px !important;
+    gap: 14px !important;
+  }
+
+  .grid-4, .grid-3, .grid-2, .stat-grid, .social-pulse, .dept-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .chat-layout {
+    grid-template-columns: 1fr !important;
+    height: auto !important;
+  }
+
+  /* Reduce 3D decoration intensity on mobile for performance */
+  .erp-3d-background {
+    opacity: 0.03 !important;
+  }
+
+  /* Auth Card Mobile */
+  .auth-card {
+    grid-template-columns: 1fr !important;
+    min-height: auto !important;
+    width: 100% !important;
+  }
+
+  .auth-brand-side {
+    padding: 24px !important;
+    border-right: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .auth-tagline {
+    font-size: 16px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .auth-features {
+    display: none !important;
+  }
+
+  .auth-form-side {
+    padding: 24px 20px !important;
+  }
+}

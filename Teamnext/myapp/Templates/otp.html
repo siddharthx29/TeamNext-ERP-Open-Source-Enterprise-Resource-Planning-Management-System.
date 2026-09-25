@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .otp-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 18px 0;
+        }
+
+        .otp-box {
+            width: 48px;
+            height: 52px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            background: #FAFBFD;
+            color: var(--text-primary);
+        }
+
+        .otp-box:focus {
+            background: #FFFFFF;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.15);
+        }
+    </style>
+</head>
+
+<body class="auth-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <div class="modal-card" style="max-width: 440px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);">
+        <div style="padding: 24px; text-align: center; background: #0B111E; color: #FFFFFF; border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <div class="brand-logo" style="margin: 0 auto 10px auto; width: 32px; height: 32px; font-size: 12px;">TN</div>
+            <div style="font-size: 16px; font-weight: 700; color: #FFFFFF;">Security Verification</div>
+            <div style="font-size: 11px; color: #8A96AB; margin-top: 4px;">
+                Enter 4-digit code sent to <strong style="color: #CDD5E0;">{{ email }}</strong>
+            </div>
+        </div>
+
+        <div style="padding: 24px; background: #FFFFFF;">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div style="text-align: center; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">
+                Time remaining: <span id="timer" style="color: var(--primary-accent); font-weight: 700; font-size: 13px;">05:00</span>
+            </div>
+
+            <form id="verify-form" method="POST" action="{% url 'verify_otp' %}">
+                {% csrf_token %}
+                <input type="hidden" name="otp" id="otpHidden">
+                <div class="otp-inputs">
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-box" id="otp1" autocomplete="one-time-code" autofocus>
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-box" id="otp2">
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-box" id="otp3">
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-box" id="otp4">
+                </div>
+            </form>
+
+            <div style="display: flex; gap: 8px; margin-top: 14px;">
+                <button type="submit" form="verify-form" class="btn btn-primary" style="flex: 2; padding: 10px;">Verify & Sign In</button>
+                <form method="POST" action="{% url 'resend_otp' %}" style="flex: 1;">
+                    {% csrf_token %}
+                    <button type="submit" id="resendBtn" class="btn btn-ghost" style="width: 100%; padding: 10px;" disabled>Resend</button>
+                </form>
+            </div>
+
+            <div style="text-align: center; margin-top: 16px;">
+                <a href="{% url 'login' %}" style="color: var(--text-muted); font-size: 12px; text-decoration: none;">
+                    ← Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let expiryTime = {{ expiry_timestamp|default:0 }} * 1000;
+        let timer = document.getElementById("timer");
+        let resendBtn = document.getElementById("resendBtn");
+        let verifyForm = document.getElementById('verify-form');
+        let otpHidden = document.getElementById('otpHidden');
+        const otpBoxes = document.querySelectorAll('.otp-box');
+
+        if (expiryTime > 0) {
+            const interval = setInterval(() => {
+                let timeLeft = Math.floor((expiryTime - Date.now()) / 1000);
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    timer.innerText = "EXPIRED";
+                    timer.style.color = "var(--danger-red)";
+                    resendBtn.disabled = false;
+                    return;
+                }
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                timer.innerText = m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+            }, 1000);
+        } else {
+            resendBtn.disabled = false;
+        }
+
+        function updateHiddenOTP() {
+            let otp = '';
+            otpBoxes.forEach(b => otp += b.value);
+            otpHidden.value = otp;
+            return otp;
+        }
+
+        otpBoxes.forEach((box, idx) => {
+            box.addEventListener('input', (e) => {
+                const val = e.target.value.replace(/[^0-9]/g, '');
+                e.target.value = val.slice(0, 1);
+                if (val && idx < otpBoxes.length - 1) {
+                    otpBoxes[idx + 1].focus();
+                }
+                const fullOtp = updateHiddenOTP();
+                if (fullOtp.length === 4) {
+                    setTimeout(() => verifyForm.submit(), 300);
+                }
+            });
+
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+                    otpBoxes[idx - 1].focus();
+                    otpBoxes[idx - 1].value = '';
+                    updateHiddenOTP();
+                }
+            });
+
+            box.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasted = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 4);
+                pasted.split('').forEach((digit, i) => {
+                    if (otpBoxes[i]) {
+                        otpBoxes[i].value = digit;
+                    }
+                });
+                const nextIdx = Math.min(pasted.length, otpBoxes.length - 1);
+                otpBoxes[nextIdx].focus();
+                const fullOtp = updateHiddenOTP();
+                if (fullOtp.length === 4) {
+                    setTimeout(() => verifyForm.submit(), 300);
+                }
+            });
+        });
+
+        verifyForm.addEventListener('submit', () => updateHiddenOTP());
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,733 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Reports Center - TeamNext ERP</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .report-card {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 16px 18px;
+            background: #FFFFFF;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            gap: 16px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            border-color: var(--primary-accent);
+        }
+
+        .report-icon-box {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .report-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .report-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .report-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.45;
+            margin-bottom: 12px;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-format {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11.5px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+            background: #FAFBFD;
+            cursor: pointer;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .btn-format:hover {
+            background: #F1F5F9;
+        }
+
+        .btn-format.pdf {
+            color: #DC2626;
+            border-color: #FECACA;
+        }
+        .btn-format.pdf:hover {
+            background: #FEF2F2;
+            border-color: #FCA5A5;
+        }
+
+        .btn-format.excel {
+            color: #16A34A;
+            border-color: #BBF7D0;
+        }
+        .btn-format.excel:hover {
+            background: #F0FDF4;
+            border-color: #86EFAC;
+        }
+
+        .btn-format:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .modal-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 90%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: #FAFBFD;
+        }
+
+        .modal-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            font-size: 13px;
+            background: #FFFFFF;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+
+        .modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 14px 20px;
+            gap: 10px;
+            border-top: 1px solid var(--border-subtle);
+            background: #FAFBFD;
+        }
+
+        .status-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0F172A;
+            color: #FFFFFF;
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            font-size: 13px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            animation: slideUp 0.25s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="reports" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Enterprise Reports Center" action_label="+ Generate Report" action_onclick="generateAllReports()" %}
+
+        <main class="content-area">
+            <!-- Stat Cards -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Operational Records</div>
+                    <div class="stat-value" style="color: #9333EA;">{{ reports_stats.total_exports|default:"24" }}</div>
+                    <div class="stat-delta delta-up">● All monitored domains</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Active Monitored Modules</div>
+                    <div class="stat-value" style="color: var(--primary-accent);">9 Modules</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● Live tracking & audit</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Data Reconciliation Rate</div>
+                    <div class="stat-value" style="color: var(--success-green);">{{ reports_stats.accuracy_rate|default:"100%" }}</div>
+                    <div class="stat-delta delta-up">● Fully reconciled ledger</div>
+                </div>
+            </div>
+
+            <!-- Global Status Bar -->
+            <div id="genStatus" style="margin-bottom: 14px; text-align: center; font-size: 13px; font-weight: 500; min-height: 20px;"></div>
+
+            <!-- Master Executive Banner Card -->
+            <div class="panel" style="margin-bottom: 20px; border-left: 4px solid var(--primary-accent);">
+                <div class="panel-body" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="report-icon-box" style="background: rgba(59, 130, 246, 0.12); color: #2563EB;">
+                            <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#building"></use></svg>
+                        </div>
+                        <div>
+                            <span class="report-badge" style="background: #EFF6FF; color: #2563EB;">Executive Suite</span>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);">All-in-One Comprehensive Executive Master Audit</div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Aggregated multi-module report synthesizing Finance, HR, Projects, Tasks, Tickets, Inventory, Leaves, and Feedback into a single audit statement.</div>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn-format pdf" onclick="generateReport('Executive Master', 'pdf')" title="Export Master PDF">
+                            <span><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg></span> PDF Audit
+                        </button>
+                        <button class="btn-format excel" onclick="generateReport('Executive Master', 'excel')" title="Export Master Excel">
+                            <span><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg></span> Excel Workbook
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Reports Panel -->
+            <div class="panel">
+                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="panel-title">Operational Module Audit Templates</span>
+                    <span style="font-size: 12px; color: var(--text-muted);">Select standard PDF or styled Excel format</span>
+                </div>
+                <div class="panel-body">
+                    <div class="report-grid">
+                        
+                        <!-- 1. Finance -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #ECFDF5; color: #059669;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#dollar"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #ECFDF5; color: #059669;">Financial Engine</span>
+                                <div class="report-title">Monthly Financial & Tax Audit</div>
+                                <div class="report-desc">Gross invoiced revenue, assessed GST taxes, operating expenses, and workforce payroll margins.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Financial', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Financial', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. HR & Staffing -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #EFF6FF; color: #2563EB;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#users"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #EFF6FF; color: #2563EB;">Human Resources</span>
+                                <div class="report-title">HR & Workforce Directory</div>
+                                <div class="report-desc">Complete workforce roster, departmental mapping, designated roles, phone contacts, and tenure.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('HR', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('HR', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Attendance & Productivity -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #F5F3FF; color: #7C3AED;">
+                                ⏱️
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #F5F3FF; color: #7C3AED;">Operations</span>
+                                <div class="report-title">Attendance & Daily Productivity</div>
+                                <div class="report-desc">Timesheets, shift check-ins, check-outs, tardiness tracking, and workforce attendance index.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Productivity', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Productivity', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Leave Management -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #FFFBEB; color: #D97706;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#calendar"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #FFFBEB; color: #D97706;">Time-Off</span>
+                                <div class="report-title">Leave Management & Approvals</div>
+                                <div class="report-desc">Leave balance allocations, approved vacation requests, pending approvals, and active absences.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Leaves', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Leaves', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Projects & Tasks -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #F0FDF4; color: #16A34A;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#rocket"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #F0FDF4; color: #16A34A;">Project Tasks</span>
+                                <div class="report-title">Project Management & Tasks</div>
+                                <div class="report-desc">Kanban sprint tasks, priority blockers, assignees, logged vs estimated hours, and velocity index.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Projects', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Projects', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Support Tickets -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #FEF2F2; color: #DC2626;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#ticket"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #FEF2F2; color: #DC2626;">Support Desk</span>
+                                <div class="report-title">Ticket Resolution & SLA Metrics</div>
+                                <div class="report-desc">Customer helpdesk backlogs, critical SLA adherence, custodian assignments, and mean response times.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Support', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Support', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Inventory & Assets -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #FFF7ED; color: #EA580C;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#box"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #FFF7ED; color: #EA580C;">Capital Assets</span>
+                                <div class="report-title">Hardware Asset & Stock Audit</div>
+                                <div class="report-desc">Monitored equipment SKUs, physical workstation fleet, capital valuation, and stock levels.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Inventory', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Inventory', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 8. Workplace Feedback -->
+                        <div class="report-card">
+                            <div class="report-icon-box" style="background: #FDF2F8; color: #DB2777;">
+                                <svg class="ui-icon ui-icon-lg"><use href="/static/myapp/images/ui-icons.svg#chat"></use></svg>
+                            </div>
+                            <div style="flex: 1;">
+                                <span class="report-badge" style="background: #FDF2F8; color: #DB2777;">Organizational Voice</span>
+                                <div class="report-title">Workplace Feedback & Voice</div>
+                                <div class="report-desc">Employee suggestions, workplace blocker grievances, team kudos, and administrative response rate.</div>
+                                <div class="report-actions">
+                                    <button class="btn-format pdf" onclick="generateReport('Feedback', 'pdf')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#file"></use></svg> PDF</button>
+                                    <button class="btn-format excel" onclick="generateReport('Feedback', 'excel')"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#sheet"></use></svg> Excel</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Downloads Panel -->
+            <div class="panel">
+                <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="panel-title">Recent Document Exports</span>
+                    <button class="btn btn-ghost btn-sm" onclick="clearDownloadHistory()" style="font-size: 11px;">Clear History</button>
+                </div>
+                <div class="panel-body">
+                    <div id="downloadsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Dynamically populated from localStorage -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Generate Custom / All Reports Modal -->
+    <div id="generateModal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">Generate Enterprise Report</div>
+                <button class="modal-close" onclick="closeGenerateModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modalModuleSelect">Select Target Module</label>
+                    <select id="modalModuleSelect" class="form-select">
+                        <option value="Executive Master" selected>All Modules (Executive Master Audit)</option>
+                        <option value="Financial">Financial Statement & Tax Audit</option>
+                        <option value="HR">Human Resources & Workforce Roster</option>
+                        <option value="Productivity">⏱️ Attendance Tracking & Productivity</option>
+                        <option value="Leaves">Leave Management & Time-Off Approvals</option>
+                        <option value="Projects">Project Management & Task Execution</option>
+                        <option value="Support">Support Ticket Resolution & SLA Metrics</option>
+                        <option value="Inventory">Hardware Asset & Capital Stock</option>
+                        <option value="Feedback">Workplace Feedback & Grievance Voice</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalFormatSelect">Export Document Format</label>
+                    <select id="modalFormatSelect" class="form-select">
+                        <option value="pdf" selected>PDF Document (Reconciled Audit)</option>
+                        <option value="excel">Excel Spreadsheet (.xlsx)</option>
+                    </select>
+                </div>
+                <div style="font-size: 11.5px; color: var(--text-muted); background: #F8FAFC; padding: 10px; border-radius: 6px; border: 1px solid var(--border-subtle);">
+                    ℹ️ Reports are compiled dynamically using certified ledger balances with cryptographic audit numbers and timestamps.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeGenerateModal()">Cancel</button>
+                <button class="btn btn-primary" id="modalSubmitBtn" onclick="submitModalReport()">Generate & Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="statusToast" class="status-toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMsg">Report downloaded</span>
+    </div>
+
+    <script>
+        // Sliced base64 to Blob helper for safe memory handling
+        function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
+            const cleanB64 = (b64Data || '').replace(/[\r\n\s]/g, '');
+            const byteCharacters = atob(cleanB64);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            return new Blob(byteArrays, { type: contentType });
+        }
+
+        // Show toast notification
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('statusToast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMsg = document.getElementById('toastMsg');
+            if (!toast) return;
+
+            toastIcon.textContent = isError ? '⚠️' : '✓';
+            toastMsg.textContent = msg;
+            toast.style.background = isError ? '#DC2626' : '#0F172A';
+            toast.style.display = 'flex';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3500);
+        }
+
+        // Generate Report Trigger
+        async function generateReport(type, format) {
+            const status = document.getElementById('genStatus');
+            const btns = document.querySelectorAll('.report-actions button, #modalSubmitBtn');
+
+            btns.forEach(b => b.disabled = true);
+            if (status) {
+                status.textContent = `Compiling ${type} audit report (${format.toUpperCase()})...`;
+                status.style.color = 'var(--primary-accent)';
+            }
+
+            try {
+                const res = await fetch('/api/reports/generate/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ report_type: type, format: format })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Server returned ${res.status}: ${res.statusText}`);
+                }
+
+                const data = await res.json();
+
+                if (data.status === 'ok' && data.file_data) {
+                    if (status) {
+                        status.textContent = 'Report compiled successfully. Initiating download...';
+                        status.style.color = 'var(--success-green)';
+                    }
+
+                    const blob = b64toBlob(data.file_data, data.content_type || (format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'));
+                    const ext = format === 'pdf' ? 'pdf' : 'xlsx';
+                    const fileName = data.filename || `${type}_Audit_${new Date().toISOString().split('T')[0]}.${ext}`;
+
+                    const link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+
+                    // Add to recent downloads history
+                    addDownloadRecord(fileName, format);
+                    showToast(`Downloaded: ${fileName}`);
+
+                    setTimeout(() => {
+                        if (status) status.textContent = '';
+                    }, 4000);
+                } else {
+                    const err = data.message || 'Error occurred while generating report';
+                    if (status) {
+                        status.textContent = err;
+                        status.style.color = 'var(--danger-red)';
+                    }
+                    showToast(err, true);
+                }
+            } catch (e) {
+                const errMsg = e.message || 'Connection error. Please try again.';
+                if (status) {
+                    status.textContent = errMsg;
+                    status.style.color = 'var(--danger-red)';
+                }
+                showToast(errMsg, true);
+            } finally {
+                btns.forEach(b => b.disabled = false);
+            }
+        }
+
+        // Topbar Handler: "+ Generate Report" opens modal
+        function generateAllReports() {
+            const modal = document.getElementById('generateModal');
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function closeGenerateModal() {
+            const modal = document.getElementById('generateModal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function submitModalReport() {
+            const moduleSelect = document.getElementById('modalModuleSelect');
+            const formatSelect = document.getElementById('modalFormatSelect');
+            const type = moduleSelect ? moduleSelect.value : 'Executive Master';
+            const format = formatSelect ? formatSelect.value : 'pdf';
+            closeGenerateModal();
+            generateReport(type, format);
+        }
+
+        // Download History Management
+        const HISTORY_KEY = 'teamnext_reports_download_history';
+
+        function loadDownloadHistory() {
+            const container = document.getElementById('downloadsContainer');
+            if (!container) return;
+
+            let history = [];
+            try {
+                history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            } catch (e) {
+                history = [];
+            }
+
+            if (!history || history.length === 0) {
+                container.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #FAFBFD; border-radius: 6px; border: 1px solid var(--border-subtle);">
+                        <span style="font-size: 12px; font-weight: 500; color: var(--text-primary);">Executive_Master_Audit.pdf</span>
+                        <span style="font-size: 11px; color: var(--text-muted);">Recent standard</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #FAFBFD; border-radius: 6px; border: 1px solid var(--border-subtle);">
+                        <span style="font-size: 12px; font-weight: 500; color: var(--text-primary);">Financial_Statement_Audit.xlsx</span>
+                        <span style="font-size: 11px; color: var(--text-muted);">Reconciled</span>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            history.slice(0, 8).forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.style = "display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: #FAFBFD; border-radius: 6px; border: 1px solid var(--border-subtle);";
+                const isPdf = item.name.endsWith('.pdf');
+                itemEl.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 14px;"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#${isPdf ? 'file' : 'sheet'}"></use></svg></span>
+                        <span style="font-size: 12px; font-weight: 500; color: var(--text-primary);">${item.name}</span>
+                    </div>
+                    <span style="font-size: 11px; color: var(--text-muted);">${item.time}</span>
+                `;
+                container.appendChild(itemEl);
+            });
+        }
+
+        function addDownloadRecord(fileName, format) {
+            let history = [];
+            try {
+                history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            } catch (e) {
+                history = [];
+            }
+
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            history.unshift({ name: fileName, format: format, time: `Today at ${timeStr}` });
+            if (history.length > 15) history = history.slice(0, 15);
+
+            try {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            } catch (e) {}
+
+            loadDownloadHistory();
+        }
+
+        function clearDownloadHistory() {
+            try {
+                localStorage.removeItem(HISTORY_KEY);
+            } catch (e) {}
+            loadDownloadHistory();
+            showToast('Download history cleared');
+        }
+
+        // Close modal on escape key or clicking outside
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeGenerateModal();
+        });
+
+        document.getElementById('generateModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'generateModal') closeGenerateModal();
+        });
+
+        document.addEventListener('DOMContentLoaded', loadDownloadHistory);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,363 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Hub - TeamNext ERP</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .social-col {
+            background: var(--panel-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .social-col-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--page-bg);
+        }
+
+        .social-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 480px;
+            min-height: 240px;
+        }
+
+        .social-card-item {
+            background: var(--panel-bg);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            position: relative;
+        }
+
+        .social-card-item:hover {
+            border-color: #CBD5E1;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .social-card-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed var(--border-subtle);
+            font-size: 11px;
+        }
+
+        .like-btn {
+            border: none;
+            background: var(--page-bg);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .like-btn:hover {
+            background: var(--primary-accent-light);
+            color: var(--primary-accent);
+        }
+
+        .delete-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .delete-btn:hover {
+            color: var(--danger-red);
+            background: #FEF2F2;
+        }
+
+        .social-add-panel {
+            padding: 12px 14px;
+            background: var(--panel-bg);
+            border-top: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .compact-input {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--page-bg);
+            transition: var(--transition);
+        }
+
+        .compact-input:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            background: #FFFFFF;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="social" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Social Hub & Team Board" action_label="← Dashboard" action_onclick="window.location.href='/dashboard/'" %}
+
+        <main class="content-area">
+            <div class="social-grid">
+                <!-- Column 1: Birthdays -->
+                <div class="social-col">
+                    <div class="social-col-header">
+                        <span class="panel-title" style="color: var(--warning-amber);"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#cake"></use></svg> Birthdays & Celebrations</span>
+                        <span class="badge badge-amber" id="count-birthday">{{ birthdays|length }}</span>
+                    </div>
+                    <div class="social-list" id="list-birthday">
+                        {% for b in birthdays %}
+                        <div class="social-card-item" data-id="{{ b.id }}">
+                            <div style="display: flex; justify-content: space-between; font-weight: 600; color: var(--text-primary);">
+                                <span>{{ b.title }}</span>
+                                <span style="color: var(--warning-amber); font-size: 11px; font-weight: 600;">{{ b.meta_info }}</span>
+                            </div>
+                            <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">{{ b.content|default:"Team Member" }}</div>
+                            <div class="social-card-actions">
+                                <button class="like-btn" onclick="toggleLike(this, '🎉')">🎉 <span>Cheer</span></button>
+                                <button class="delete-btn" title="Remove" onclick="deleteSocialItem({{ b.id }}, this)" aria-label="Remove item"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#trash"></use></svg></button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 30px;">
+                            No upcoming birthdays. Add one below!
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="social-add-panel">
+                        <input type="text" id="bd-name" placeholder="Name (e.g. Aarav Sharma)" class="compact-input" onkeydown="if(event.key==='Enter') addItem('birthday')">
+                        <input type="text" id="bd-date" placeholder="Date (e.g. Feb 18)" class="compact-input" onkeydown="if(event.key==='Enter') addItem('birthday')">
+                        <input type="text" id="bd-role" placeholder="Role (e.g. Lead Designer)" class="compact-input" onkeydown="if(event.key==='Enter') addItem('birthday')">
+                        <button id="btn-add-birthday" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;" onclick="addItem('birthday')">
+                            + Add Birthday
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Column 2: Hot Topics -->
+                <div class="social-col">
+                    <div class="social-col-header">
+                        <span class="panel-title" style="color: var(--primary-accent);"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#flame"></use></svg> Hot Topics & Discussions</span>
+                        <span class="badge badge-blue" id="count-topic">{{ hot_topics|length }}</span>
+                    </div>
+                    <div class="social-list" id="list-topic">
+                        {% for t in hot_topics %}
+                        <div class="social-card-item" data-id="{{ t.id }}">
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">{{ t.title }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">By {{ t.meta_info|default:"Engineering Team" }}</div>
+                            <div class="social-card-actions">
+                                <button class="like-btn" onclick="toggleLike(this, '🔥')">🔥 <span>Discuss</span></button>
+                                <button class="delete-btn" title="Remove" onclick="deleteSocialItem({{ t.id }}, this)" aria-label="Remove item"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#trash"></use></svg></button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 30px;">
+                            No discussion topics yet. Start one below!
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="social-add-panel">
+                        <input type="text" id="topic-title" placeholder="Topic Title" class="compact-input" onkeydown="if(event.key==='Enter') addItem('topic')">
+                        <input type="text" id="topic-author" placeholder="Department / Author" class="compact-input" onkeydown="if(event.key==='Enter') addItem('topic')">
+                        <button id="btn-add-topic" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;" onclick="addItem('topic')">
+                            + Add Discussion Topic
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Column 3: Daily Dares -->
+                <div class="social-col">
+                    <div class="social-col-header">
+                        <span class="panel-title" style="color: var(--purple-accent);">⚡ Daily Dares & Challenges</span>
+                        <span class="badge badge-purple" id="count-dare" style="background: var(--purple-bg); color: var(--purple-accent);">{{ dares|length }}</span>
+                    </div>
+                    <div class="social-list" id="list-dare">
+                        {% for d in dares %}
+                        <div class="social-card-item" data-id="{{ d.id }}">
+                            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 3px;">"{{ d.content }}"</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">From: {{ d.title|default:"Challenger" }} → To: {{ d.meta_info|default:"All" }}</div>
+                            <div class="social-card-actions">
+                                <button class="like-btn" onclick="toggleLike(this, '⚡')">⚡ <span>Accepted</span></button>
+                                <button class="delete-btn" title="Remove" onclick="deleteSocialItem({{ d.id }}, this)" aria-label="Remove item"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#trash"></use></svg></button>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state" style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 30px;">
+                            No daily challenges yet. Issue one below!
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="social-add-panel">
+                        <input type="text" id="dare-task" placeholder="The Challenge / Task" class="compact-input" onkeydown="if(event.key==='Enter') addItem('dare')">
+                        <input type="text" id="dare-from" placeholder="From (Challenger Name)" class="compact-input" onkeydown="if(event.key==='Enter') addItem('dare')">
+                        <input type="text" id="dare-to" placeholder="To (Target Team / Person)" class="compact-input" onkeydown="if(event.key==='Enter') addItem('dare')">
+                        <button id="btn-add-dare" class="btn btn-primary btn-sm" style="width: 100%; justify-content: center;" onclick="addItem('dare')">
+                            + Issue Challenge
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function addItem(type) {
+            let payload = { type: type };
+            let btn = document.getElementById(`btn-add-${type}`);
+            let originalText = btn ? btn.textContent : '';
+
+            if (type === 'birthday') {
+                const name = document.getElementById('bd-name').value.trim();
+                const date = document.getElementById('bd-date').value.trim();
+                const role = document.getElementById('bd-role').value.trim();
+                if (!name || !date) return alert('Name and Date are required');
+                payload = { ...payload, name, date, role };
+            } else if (type === 'topic') {
+                const title = document.getElementById('topic-title').value.trim();
+                const author = document.getElementById('topic-author').value.trim();
+                if (!title) return alert('Topic Title is required');
+                payload = { ...payload, title, author: author || 'Team' };
+            } else if (type === 'dare') {
+                const task = document.getElementById('dare-task').value.trim();
+                const from = document.getElementById('dare-from').value.trim();
+                const to = document.getElementById('dare-to').value.trim();
+                if (!task) return alert('Challenge Task is required');
+                payload = { ...payload, task, from: from || 'Mystery', to: to || 'All' };
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Posting...';
+            }
+
+            try {
+                const res = await fetch('/api/social/add/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    // Clear form inputs
+                    if (type === 'birthday') {
+                        document.getElementById('bd-name').value = '';
+                        document.getElementById('bd-date').value = '';
+                        document.getElementById('bd-role').value = '';
+                    } else if (type === 'topic') {
+                        document.getElementById('topic-title').value = '';
+                        document.getElementById('topic-author').value = '';
+                    } else if (type === 'dare') {
+                        document.getElementById('dare-task').value = '';
+                        document.getElementById('dare-from').value = '';
+                        document.getElementById('dare-to').value = '';
+                    }
+                    window.location.reload();
+                } else {
+                    alert('Failed: ' + (data.message || 'Error occurred'));
+                }
+            } catch (e) {
+                alert('Network error while adding social item');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                }
+            }
+        }
+
+        async function deleteSocialItem(id, element) {
+            if (!confirm('Are you sure you want to delete this social post?')) return;
+            try {
+                const res = await fetch('/api/social/delete/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: id })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    const card = element.closest('.social-card-item');
+                    if (card) card.remove();
+                } else {
+                    alert(data.message || 'Failed to delete');
+                }
+            } catch (e) {
+                console.error('Error deleting social item:', e);
+            }
+        }
+
+        function toggleLike(btn, emoji) {
+            let countSpan = btn.querySelector('span');
+            let text = countSpan.textContent;
+            let count = parseInt(text) || 0;
+            count++;
+            countSpan.textContent = count + ' Cheers';
+            btn.style.background = 'var(--primary-accent-light)';
+            btn.style.color = 'var(--primary-accent)';
+        }
+    </script>
+</body>
+
+</html>

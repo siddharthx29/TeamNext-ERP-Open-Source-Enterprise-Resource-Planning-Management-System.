@@ -1,0 +1,969 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Management & Project Staffing - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        .project-tag-clean {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: 500;
+            background: #F8FAFC;
+            color: #334155;
+            border: 1px solid #E2E8F0;
+            margin: 2px 4px 2px 0;
+            white-space: nowrap;
+        }
+        .priv-tag {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #F1F5F9;
+            color: #475569;
+            border: 1px solid #E2E8F0;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle Blueprint Grid Background -->
+    <div class="erp-3d-background" aria-hidden="true"></div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="hr" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="HR Management" action_label="+ Add Employee" action_onclick="openAddEmployeeModal()" %}
+
+        <main class="content-area">
+            <!-- Stat Cards -->
+            <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="stat-card">
+                    <div class="stat-label">Total Workforce</div>
+                    <div class="stat-value" id="total-employees" style="color: var(--primary-accent);">{{ total_employees|default:"0" }}</div>
+                    <div class="stat-delta delta-up">● Registered staff</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Project Appointments</div>
+                    <div class="stat-value" id="total-project-appointments" style="color: #6366F1;">0</div>
+                    <div class="stat-delta delta-up">● Active deployments</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Present Today</div>
+                    <div class="stat-value" id="present-today" style="color: var(--success-green);">{{ present_today|default:"0" }}</div>
+                    <div class="stat-delta delta-up">● Checked-in</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">On Leave Today</div>
+                    <div class="stat-value" id="on-leave-today" style="color: var(--warning-amber);">{{ on_leave_today|default:"0" }}</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● Approved absences</div>
+                </div>
+            </div>
+
+            <!-- Main Panel with Tabs -->
+            <div class="panel">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('employees')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        <span>Employee Directory</span>
+                    </button>
+                    <button class="tab" onclick="switchTab('project-staffing')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            <line x1="12" y1="11" x2="12" y2="17"></line>
+                            <line x1="9" y1="14" x2="15" y2="14"></line>
+                        </svg>
+                        <span>Project Appointees & Staffing</span>
+                    </button>
+                    <button class="tab" onclick="switchTab('attendance')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>Attendance Tracker</span>
+                    </button>
+                    <button class="tab" onclick="switchTab('records')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span>Historical Records</span>
+                    </button>
+                </div>
+
+                <!-- Tab 1: Employees Directory -->
+                <div id="employees-tab" class="tab-content active">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Personnel Roster with Appointed Projects</span>
+                        <button class="btn btn-ghost btn-sm" onclick="openAppointProjectModal()" style="display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Appoint to Project</span>
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Department</th>
+                                    <th>Appointed Projects</th>
+                                    <th>Today's Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employees-list">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                        Loading employee directory...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Project Staffing & Appointed Members (NEW) -->
+                <div id="project-staffing-tab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Project Staffing & Assigned Personnel</span>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <label style="margin: 0; font-size: 11px; color: var(--text-muted);">Filter Project:</label>
+                                <select id="staffing-project-filter" class="compact-input" onchange="filterProjectStaffing()" style="font-size: 12px; padding: 4px 8px;">
+                                    <option value="all">All Enterprise Projects</option>
+                                    {% for p in projects %}
+                                    <option value="{{ p.id }}">{{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="openAppointProjectModal()" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Appoint Employee to Project</span>
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Appointed Employee</th>
+                                    <th>Assigned Project</th>
+                                    <th>Role / Department</th>
+                                    <th>Privileges & Access</th>
+                                    <th>Active Tickets</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="project-staffing-list">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                        Loading project appointments...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Attendance Tracker -->
+                <div id="attendance-tab" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                        <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Daily Time & Attendance Log</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="margin: 0; font-size: 11px;">Date:</label>
+                            <input type="date" id="attendance-tracker-date" class="compact-input" onchange="loadAttendanceTracker()">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-tracker-list">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                        Loading tracker...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Records History -->
+                <div id="records-tab" class="tab-content">
+                    <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; align-items: flex-end;">
+                        <div style="flex: 1; min-width: 160px;">
+                            <label>Filter Employee</label>
+                            <select id="filter-employee-select" onchange="loadAttendanceRecords()">
+                                <option value="">All Personnel</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1; min-width: 140px;">
+                            <label>From Date</label>
+                            <input type="date" id="from-date" onchange="loadAttendanceRecords()">
+                        </div>
+                        <div style="flex: 1; min-width: 140px;">
+                            <label>To Date</label>
+                            <input type="date" id="to-date" onchange="loadAttendanceRecords()">
+                        </div>
+                        <div style="flex: 1; min-width: 140px;">
+                            <label>Status</label>
+                            <select id="filter-status-select" onchange="loadAttendanceRecords()">
+                                <option value="">All Statuses</option>
+                                <option value="present">Present</option>
+                                <option value="absent">Absent</option>
+                                <option value="late">Late</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Employee</th>
+                                    <th>Check In</th>
+                                    <th>Check Out</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-list">
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                        Select date range to view records.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Add Employee -->
+    <div id="add-employee-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Register New Employee</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeAddEmployeeModal()">✕</button>
+            </div>
+            <form id="add-employee-form" onsubmit="addEmployee(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" name="name" required placeholder="e.g. Aarav Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label>Work Email *</label>
+                        <input type="email" name="email" required placeholder="aarav.sharma@company.com">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Designation / Role *</label>
+                            <input type="text" name="role" required placeholder="e.g. Senior Accountant">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone</label>
+                            <input type="tel" name="phone" placeholder="+1 555-0199">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <select name="department_id" id="modal-department-select">
+                            <option value="">-- Unassigned --</option>
+                            {% for d in departments %}
+                            <option value="{{ d.id }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeAddEmployeeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Appoint Employee to Project (NEW) -->
+    <div id="appoint-project-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Appoint Employee to Project</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeAppointProjectModal()">✕</button>
+            </div>
+            <form id="appoint-project-form" onsubmit="submitAppointProject(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select Employee *</label>
+                        <select name="employee_id" id="modal-appoint-employee-select" required>
+                            <option value="">-- Choose Employee --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Target Project *</label>
+                        <select name="project_id" id="modal-appoint-project-select" required>
+                            <option value="">-- Choose Project --</option>
+                            {% for p in projects %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div style="background: #FAFBFD; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-top: 10px;">
+                        <span style="font-size: 12px; font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 8px;">Project Access Privileges</span>
+                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin: 0; cursor: pointer;">
+                                <input type="checkbox" name="can_chat" checked>
+                                <span>Enable Project Chat & Discussion</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin: 0; cursor: pointer;">
+                                <input type="checkbox" name="is_admin">
+                                <span>Project Administrator (Can manage settings)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-weight: normal; margin: 0; cursor: pointer;">
+                                <input type="checkbox" name="can_approve_leaves">
+                                <span>Authorized to Approve Leaves for this Project</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="appointMsg" style="margin-top: 10px; font-size: 12px; text-align: center; min-height: 14px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeAppointProjectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="confirmAppointBtn">Confirm Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Mark Attendance -->
+    <div id="mark-attendance-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Log Attendance Record</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeMarkAttendanceModal()">✕</button>
+            </div>
+            <form id="mark-attendance-form" onsubmit="markAttendance(event)">
+                <div class="modal-body">
+                    <input type="hidden" name="employee_id" id="attendance-employee-id">
+                    <input type="hidden" name="mode" id="attendance-mode" value="checkin">
+
+                    <div class="form-group">
+                        <label>Employee Name</label>
+                        <input type="text" id="attendance-employee-name" readonly style="background: #F8FAFC; color: var(--text-secondary);">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" name="date" id="attendance-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Attendance Status</label>
+                            <select name="status" id="attendance-status">
+                                <option value="present">Present</option>
+                                <option value="absent">Absent</option>
+                                <option value="late">Late Arrival</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" id="checkin-group">
+                            <label>Check In Time</label>
+                            <input type="time" name="check_in" id="attendance-checkin">
+                        </div>
+                        <div class="form-group" id="checkout-group">
+                            <label>Check Out Time</label>
+                            <input type="time" name="check_out" id="attendance-checkout">
+                        </div>
+                    </div>
+                    <div id="checkout-hint" style="font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                        ℹ Check-out time activates after check-in is submitted.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeMarkAttendanceModal()">Cancel</button>
+                    <button type="submit" id="attendance-submit-btn" class="btn btn-primary">Save Attendance</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'employees';
+        let cachedStaffingData = null;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            if (tab === 'employees') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('employees-tab').classList.add('active');
+                loadEmployees();
+            } else if (tab === 'project-staffing') {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('project-staffing-tab').classList.add('active');
+                loadProjectStaffing();
+            } else if (tab === 'attendance') {
+                document.querySelectorAll('.tab')[2].classList.add('active');
+                document.getElementById('attendance-tab').classList.add('active');
+                loadAttendanceTracker();
+            } else if (tab === 'records') {
+                document.querySelectorAll('.tab')[3].classList.add('active');
+                document.getElementById('records-tab').classList.add('active');
+                loadAttendanceRecords();
+            }
+        }
+
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/hr/employees/');
+                const data = await response.json();
+                const tbody = document.getElementById('employees-list');
+                const filterSelect = document.getElementById('filter-employee-select');
+                const appointEmpSelect = document.getElementById('modal-appoint-employee-select');
+
+                if (data.status === 'ok' && data.employees) {
+                    if (filterSelect) {
+                        filterSelect.innerHTML = '<option value="">All Personnel</option>' +
+                            data.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+                    }
+
+                    if (appointEmpSelect) {
+                        appointEmpSelect.innerHTML = '<option value="">-- Choose Employee --</option>' +
+                            data.employees.map(e => `<option value="${e.id}">${e.name} (${e.role || 'Staff'})</option>`).join('');
+                    }
+
+                    if (data.employees.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">No employees registered yet.</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.employees.map(emp => {
+                        let badgeClass = 'badge-gray';
+                        let statusText = 'Not Marked';
+                        if (emp.attendance_status === 'present') {
+                            badgeClass = 'badge-green';
+                            statusText = 'Present';
+                        } else if (emp.attendance_status === 'absent') {
+                            badgeClass = 'badge-red';
+                            statusText = 'Absent';
+                        } else if (emp.attendance_status === 'late') {
+                            badgeClass = 'badge-amber';
+                            statusText = 'Late Arrival';
+                        }
+
+                        let projectBadges = '<span style="color:var(--text-muted); font-size:11px;">Unassigned</span>';
+                        if (emp.appointed_projects && emp.appointed_projects.length > 0) {
+                            projectBadges = emp.appointed_projects.map(p => `
+                                <span class="project-tag-clean" title="Appointed to ${escapeHtml(p.name)}">
+                                    ${escapeHtml(p.name)}
+                                    ${p.is_admin ? '<span style="color:var(--text-muted); font-size:10px;"> (Lead)</span>' : ''}
+                                </span>
+                            `).join('');
+                        }
+
+                        const btnText = (emp.check_in && !emp.check_out) ? 'Check Out' : 'Mark';
+                        const mode = (emp.check_in && !emp.check_out) ? 'checkout' : 'checkin';
+
+                        return `
+                            <tr>
+                                <td style="font-weight:600; color:var(--text-primary);">${escapeHtml(emp.name)}</td>
+                                <td>${escapeHtml(emp.email)}</td>
+                                <td>${escapeHtml(emp.role || '-')}</td>
+                                <td>${escapeHtml(emp.department_name || emp.department || '-')}</td>
+                                <td>${projectBadges}</td>
+                                <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                                <td>
+                                    <button class="btn btn-ghost btn-sm" onclick="openMarkAttendanceModal(${emp.id}, '${emp.name.replace(/'/g, "\\'")}', '${emp.check_in || ''}', '${emp.check_out || ''}', '${mode}')">
+                                        ${btnText}
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadProjectStaffing() {
+            try {
+                const response = await fetch('/api/hr/project-staffing/');
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    cachedStaffingData = data;
+                    const appointCountEl = document.getElementById('total-project-appointments');
+                    if (appointCountEl) appointCountEl.textContent = data.total_appointments || 0;
+                    renderProjectStaffingTable(data.all_appointed || []);
+                }
+            } catch (err) {
+                console.error('Error loading project staffing', err);
+            }
+        }
+
+        function filterProjectStaffing() {
+            if (!cachedStaffingData) return;
+            const filterVal = document.getElementById('staffing-project-filter').value;
+            let list = cachedStaffingData.all_appointed || [];
+            if (filterVal !== 'all') {
+                const pId = parseInt(filterVal);
+                list = list.filter(m => m.project_id === pId);
+            }
+            renderProjectStaffingTable(list);
+        }
+
+        function renderProjectStaffingTable(membersList) {
+            const tbody = document.getElementById('project-staffing-list');
+            if (!tbody) return;
+
+            if (!membersList || membersList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">No employees appointed for the selected project filter. Click "+ Appoint Employee to Project" to assign team members.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = membersList.map(m => {
+                let privs = [];
+                if (m.is_admin) privs.push('<span class="priv-tag">Lead</span>');
+                if (m.can_chat) privs.push('<span class="priv-tag">Chat</span>');
+                if (m.can_approve_leaves) privs.push('<span class="priv-tag">Leaves</span>');
+                let privHtml = privs.length > 0 ? privs.join('') : '<span style="color:var(--text-muted); font-size:11px;">Member</span>';
+
+                return `
+                    <tr id="member-row-${m.membership_id}">
+                        <td>
+                            <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(m.name)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${escapeHtml(m.email)}</div>
+                        </td>
+                        <td>
+                            <span class="project-tag-clean">${escapeHtml(m.project_name)}</span>
+                        </td>
+                        <td>
+                            <div style="font-weight:500;">${escapeHtml(m.role)}</div>
+                            <div style="font-size:11px; color:var(--text-muted);">${escapeHtml(m.department)}</div>
+                        </td>
+                        <td>${privHtml}</td>
+                        <td>
+                            <span style="font-size: 12px; color: var(--text-secondary);">${m.assigned_tickets} assigned</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-ghost btn-sm" onclick="removeProjectMember(${m.membership_id}, '${escapeHtml(m.name)}', '${escapeHtml(m.project_name)}')" style="color: #64748B;">
+                                Revoke
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function removeProjectMember(membershipId, empName, projName) {
+            if (!confirm(`Are you sure you want to remove ${empName} from project ${projName}?`)) return;
+            try {
+                const response = await fetch('/api/hr/remove-project-member/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ membership_id: membershipId })
+                });
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    loadProjectStaffing();
+                    loadEmployees();
+                } else {
+                    alert(data.message || 'Error removing appointment');
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        }
+
+        function openAppointProjectModal() {
+            const modal = document.getElementById('appoint-project-modal');
+            if (modal) modal.classList.add('active');
+            const msg = document.getElementById('appointMsg');
+            if (msg) msg.textContent = '';
+        }
+
+        function closeAppointProjectModal() {
+            const modal = document.getElementById('appoint-project-modal');
+            if (modal) modal.classList.remove('active');
+            const form = document.getElementById('appoint-project-form');
+            if (form) form.reset();
+        }
+
+        async function submitAppointProject(event) {
+            event.preventDefault();
+            const form = event.target;
+            const employee_id = form.querySelector('[name="employee_id"]').value;
+            const project_id = form.querySelector('[name="project_id"]').value;
+            const is_admin = form.querySelector('[name="is_admin"]').checked;
+            const can_chat = form.querySelector('[name="can_chat"]').checked;
+            const can_approve_leaves = form.querySelector('[name="can_approve_leaves"]').checked;
+            const msg = document.getElementById('appointMsg');
+
+            if (!employee_id || !project_id) {
+                if (msg) {
+                    msg.textContent = 'Please select both an employee and a target project.';
+                    msg.style.color = 'var(--danger-red)';
+                }
+                return;
+            }
+
+            if (msg) {
+                msg.textContent = 'Appointing employee to project...';
+                msg.style.color = 'var(--text-muted)';
+            }
+
+            try {
+                const response = await fetch('/api/hr/appoint-project/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employee_id, project_id, is_admin, can_chat, can_approve_leaves })
+                });
+                const result = await response.json();
+                if (result.status === 'ok') {
+                    if (msg) {
+                        msg.textContent = result.message || 'Appointment saved successfully!';
+                        msg.style.color = 'var(--success-green)';
+                    }
+                    setTimeout(() => {
+                        closeAppointProjectModal();
+                        loadProjectStaffing();
+                        loadEmployees();
+                    }, 600);
+                } else {
+                    if (msg) {
+                        msg.textContent = result.message || 'Failed to appoint employee';
+                        msg.style.color = 'var(--danger-red)';
+                    }
+                }
+            } catch (err) {
+                if (msg) {
+                    msg.textContent = 'Connection error saving appointment';
+                    msg.style.color = 'var(--danger-red)';
+                }
+            }
+        }
+
+        async function loadAttendanceTracker() {
+            const dateInput = document.getElementById('attendance-tracker-date');
+            if (!dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            const date = dateInput.value;
+
+            try {
+                const response = await fetch(`/api/hr/attendance-tracker/?date=${date}`);
+                const data = await response.json();
+                const tbody = document.getElementById('attendance-tracker-list');
+
+                if (data.status === 'ok' && data.records) {
+                    if (data.records.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">No employee records found for this workspace.</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.records.map(rec => {
+                        let badgeClass = 'badge-gray';
+                        let displayStatus = 'Not Marked';
+                        if (rec.status === 'present') {
+                            badgeClass = 'badge-green';
+                            displayStatus = 'Present';
+                        } else if (rec.status === 'absent') {
+                            badgeClass = 'badge-red';
+                            displayStatus = 'Absent';
+                        } else if (rec.status === 'late') {
+                            badgeClass = 'badge-amber';
+                            displayStatus = 'Late Arrival';
+                        }
+
+                        let btnText = 'Log Attendance';
+                        let mode = 'checkin';
+                        if (rec.check_in && !rec.check_out) {
+                            btnText = 'Check Out';
+                            mode = 'checkout';
+                        } else if (rec.check_in && rec.check_out) {
+                            btnText = 'Update';
+                            mode = 'checkout';
+                        }
+
+                        return `
+                            <tr>
+                                <td>
+                                    <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(rec.employee_name)}</div>
+                                    <div style="font-size:11px; color:var(--text-muted);">${escapeHtml(rec.department_name)} • ${escapeHtml(rec.employee_role)}</div>
+                                </td>
+                                <td>${rec.check_in || '--:--'}</td>
+                                <td>${rec.check_out || '--:--'}</td>
+                                <td><span class="badge ${badgeClass}">${displayStatus}</span></td>
+                                <td>
+                                    <button class="btn btn-ghost btn-sm" onclick="openMarkAttendanceModal(${rec.employee_id}, '${rec.employee_name.replace(/'/g, "\\'")}', '${rec.check_in || ''}', '${rec.check_out || ''}', '${mode}', '${date}')">
+                                        ${btnText}
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadAttendanceRecords() {
+            const empId = document.getElementById('filter-employee-select').value;
+            const fromDate = document.getElementById('from-date').value;
+            const toDate = document.getElementById('to-date').value;
+            const status = document.getElementById('filter-status-select').value;
+
+            const params = new URLSearchParams();
+            if (empId) params.append('employee_id', empId);
+            if (fromDate) params.append('from_date', fromDate);
+            if (toDate) params.append('to_date', toDate);
+            if (status) params.append('status', status);
+
+            try {
+                const response = await fetch(`/api/hr/attendance-records/?${params.toString()}`);
+                const data = await response.json();
+                const tbody = document.getElementById('records-list');
+
+                if (data.status === 'ok' && data.records) {
+                    if (data.records.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">No attendance records found matching the selected filters.</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.records.map(rec => {
+                        let badgeClass = 'badge-gray';
+                        let displayStatus = 'Not Marked';
+                        if (rec.status === 'present') {
+                            badgeClass = 'badge-green';
+                            displayStatus = 'Present';
+                        } else if (rec.status === 'absent') {
+                            badgeClass = 'badge-red';
+                            displayStatus = 'Absent';
+                        } else if (rec.status === 'late') {
+                            badgeClass = 'badge-amber';
+                            displayStatus = 'Late Arrival';
+                        }
+
+                        return `
+                            <tr>
+                                <td style="font-weight:500;">${rec.date}</td>
+                                <td>
+                                    <div style="font-weight:600; color:var(--text-primary);">${escapeHtml(rec.employee_name)}</div>
+                                    <div style="font-size:11px; color:var(--text-muted);">${escapeHtml(rec.department_name || '-')} • ${escapeHtml(rec.employee_role)}</div>
+                                </td>
+                                <td>${rec.check_in || '--:--'}</td>
+                                <td>${rec.check_out || '--:--'}</td>
+                                <td><span class="badge ${badgeClass}">${displayStatus}</span></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function openAddEmployeeModal() {
+            document.getElementById('add-employee-modal').classList.add('active');
+        }
+
+        function closeAddEmployeeModal() {
+            document.getElementById('add-employee-modal').classList.remove('active');
+            document.getElementById('add-employee-form').reset();
+        }
+
+        function openMarkAttendanceModal(employeeId, employeeName, existingCheckIn, existingCheckOut, mode, selectedDate) {
+            const checkInField = document.getElementById('attendance-checkin');
+            const checkOutField = document.getElementById('attendance-checkout');
+            const checkoutHint = document.getElementById('checkout-hint');
+            const submitBtn = document.getElementById('attendance-submit-btn');
+            const modeField = document.getElementById('attendance-mode');
+            const statusField = document.getElementById('attendance-status');
+            const dateField = document.getElementById('attendance-date');
+
+            document.getElementById('mark-attendance-form').reset();
+            document.getElementById('attendance-employee-id').value = employeeId;
+            document.getElementById('attendance-employee-name').value = employeeName;
+            
+            const trackerDateInput = document.getElementById('attendance-tracker-date');
+            const targetDate = selectedDate || (trackerDateInput && currentTab === 'attendance' ? trackerDateInput.value : '') || new Date().toISOString().split('T')[0];
+            dateField.value = targetDate;
+
+            if (mode === 'checkout' && existingCheckIn) {
+                modeField.value = 'checkout';
+                checkInField.value = existingCheckIn;
+                checkInField.readOnly = true;
+                checkOutField.disabled = false;
+                checkoutHint.style.display = 'none';
+                checkOutField.value = new Date().toTimeString().slice(0, 5);
+                submitBtn.textContent = 'Log Check Out';
+                statusField.value = 'present';
+            } else {
+                modeField.value = 'checkin';
+                checkInField.readOnly = false;
+                checkOutField.disabled = true;
+                checkoutHint.style.display = 'flex';
+                checkInField.value = new Date().toTimeString().slice(0, 5);
+                submitBtn.textContent = 'Log Check In';
+                statusField.value = 'present';
+            }
+
+            checkInField.onchange = function () {
+                if (this.value) {
+                    checkOutField.disabled = false;
+                    checkoutHint.style.display = 'none';
+                } else {
+                    checkOutField.disabled = true;
+                    checkOutField.value = '';
+                    checkoutHint.style.display = 'flex';
+                }
+            };
+
+            document.getElementById('mark-attendance-modal').classList.add('active');
+        }
+
+        function closeMarkAttendanceModal() {
+            document.getElementById('mark-attendance-modal').classList.remove('active');
+            document.getElementById('mark-attendance-form').reset();
+        }
+
+        async function addEmployee(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const deptVal = formData.get('department_id');
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                role: formData.get('role'),
+                phone: formData.get('phone'),
+                department_id: deptVal ? parseInt(deptVal) : null
+            };
+
+            try {
+                const response = await fetch('/api/hr/add-employee/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.status === 'ok') {
+                    alert(result.message);
+                    closeAddEmployeeModal();
+                    loadEmployees();
+                    updateStats();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                alert('Error adding employee');
+            }
+        }
+
+        async function markAttendance(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {
+                employee_id: formData.get('employee_id'),
+                date: formData.get('date'),
+                status: formData.get('status'),
+                check_in: formData.get('check_in'),
+                check_out: formData.get('check_out')
+            };
+
+            try {
+                const response = await fetch('/api/hr/mark-attendance/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (result.status === 'ok') {
+                    alert(result.message);
+                    closeMarkAttendanceModal();
+                    if (currentTab === 'attendance') loadAttendanceTracker();
+                    else if (currentTab === 'records') loadAttendanceRecords();
+                    else loadEmployees();
+                    updateStats();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (err) {
+                alert('Error marking attendance');
+            }
+        }
+
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/hr/employees/');
+                const data = await response.json();
+                if (data.status === 'ok') {
+                    const presentToday = data.employees.filter(e => e.attendance_status === 'present').length;
+                    document.getElementById('total-employees').textContent = data.employees.length;
+                    document.getElementById('present-today').textContent = presentToday;
+                }
+            } catch (e) { }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // Set default date filter (last 7 days)
+        const today = new Date();
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const toDateEl = document.getElementById('to-date');
+        const fromDateEl = document.getElementById('from-date');
+        if (toDateEl) toDateEl.value = today.toISOString().split('T')[0];
+        if (fromDateEl) fromDateEl.value = weekAgo.toISOString().split('T')[0];
+
+        // Init
+        loadEmployees();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,348 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="inventory" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Inventory Management" action_label="+ Add Item" action_onclick="openAssetModal()" %}
+
+        <main class="content-area">
+            <!-- Asset Stat Cards -->
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Assets</div>
+                    <div class="stat-value" id="stat-total-assets" style="color: var(--primary-accent);">{{ total_assets|default:"0" }}</div>
+                    <div class="stat-delta delta-up">● In enterprise registry</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Assigned Assets</div>
+                    <div class="stat-value" id="stat-assigned-assets" style="color: var(--success-green);">{{ assigned_assets|default:"0" }}</div>
+                    <div class="stat-delta delta-up">● Currently deployed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Under Maintenance</div>
+                    <div class="stat-value" id="stat-maintenance-assets" style="color: var(--danger-red);">{{ under_repair|default:"0" }}</div>
+                    <div class="stat-delta delta-down">● In service center</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">In Warehouse Stock</div>
+                    <div class="stat-value" id="stat-stock-assets" style="color: var(--warning-amber);">{{ in_stock|default:"0" }}</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● Ready for allocation</div>
+                </div>
+            </div>
+
+            <!-- Asset List Table -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m7.5 4.27 9 5.15"></path>
+                            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                            <path d="m3.3 7 8.7 5 8.7-5"></path>
+                            <path d="M12 22V12"></path>
+                        </svg>
+                        <span>Enterprise Hardware & Equipment Roster</span>
+                    </span>
+                    <div>
+                        <button class="btn btn-primary btn-sm" onclick="openAssetModal()" style="display: inline-flex; align-items: center; gap: 5px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <span>Register Asset</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Serial Number / SKU</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            {% if items and items|length > 0 %}
+                            {% for item in items %}
+                            <tr id="asset-row-{{ item.id }}">
+                                <td style="font-weight:600; color:var(--text-primary);">{{ item.name }}</td>
+                                <td style="font-family: monospace; color: var(--text-secondary);">{{ item.sku }}</td>
+                                <td>{{ item.category|default:"General" }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>
+                                    {% if item.quantity > 0 %}
+                                    <span class="badge badge-green">In Stock</span>
+                                    {% else %}
+                                    <span class="badge badge-red">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align: right;">
+                                    <button class="btn btn-ghost btn-sm" onclick="deleteAsset({{ item.id }})" style="color: var(--danger-red);">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            <tr id="emptyInventoryRow">
+                                <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                    No assets registered yet. Click "Register Asset" above to add your first piece of hardware or supply!
+                                </td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Supply Levels Panel -->
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">Consumables & Office Supplies Status</span>
+                </div>
+                <div class="panel-body">
+                    <div class="grid-2">
+                        <div style="background:#FAFBFD; padding:14px; border-radius:8px; border:1px solid var(--border-subtle);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 500;">
+                                <span>Notebooks & Stationery</span>
+                                <span style="color: var(--success-green); font-weight: 600;">85% remaining</span>
+                            </div>
+                            <div style="height: 6px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                <div style="width: 85%; height: 100%; background: var(--success-green);"></div>
+                            </div>
+                        </div>
+
+                        <div style="background:#FAFBFD; padding:14px; border-radius:8px; border:1px solid var(--border-subtle);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 500;">
+                                <span>Pantry Coffee & Refreshments</span>
+                                <span style="color: var(--success-green); font-weight: 600;">90% remaining</span>
+                            </div>
+                            <div style="height: 6px; background: #E2E8F0; border-radius: 4px; overflow: hidden;">
+                                <div style="width: 90%; height: 100%; background: var(--success-green);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Adding Asset -->
+    <div id="assetModal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title">Register New Enterprise Asset</span>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="closeAssetModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div class="form-group">
+                        <label>Asset Model / Name *</label>
+                        <input type="text" id="assetName" placeholder="e.g. MacBook Pro 16">
+                    </div>
+                    <div class="form-group">
+                        <label>Serial Number / Asset Tag (SKU) *</label>
+                        <input type="text" id="assetSerial" placeholder="e.g. AAPL-8839">
+                    </div>
+                    <div class="form-row" style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>Hardware Category</label>
+                            <select id="assetCategory">
+                                <option value="Computing">Computing</option>
+                                <option value="Display">Display / Monitors</option>
+                                <option value="Mobile">Mobile / Tablets</option>
+                                <option value="Furniture">Furniture</option>
+                                <option value="Other">Other Equipment</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>Quantity</label>
+                            <input type="number" id="assetQuantity" value="1" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div id="assetMsg" style="margin-top: 10px; text-align: center; font-size: 12px; min-height: 14px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" onclick="closeAssetModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAssetBtn" onclick="submitAsset()">Save Asset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const assetModal = document.getElementById('assetModal');
+        const assetMsg = document.getElementById('assetMsg');
+
+        function openAssetModal() {
+            if (assetModal) assetModal.classList.add('active');
+            if (assetMsg) assetMsg.textContent = '';
+            const nameEl = document.getElementById('assetName');
+            const serialEl = document.getElementById('assetSerial');
+            if (nameEl) nameEl.value = '';
+            if (serialEl) serialEl.value = '';
+        }
+
+        function closeAssetModal() {
+            if (assetModal) assetModal.classList.remove('active');
+        }
+
+        if (assetModal) {
+            assetModal.addEventListener('click', (e) => {
+                if (e.target === assetModal) closeAssetModal();
+            });
+        }
+
+        async function submitAsset() {
+            const nameEl = document.getElementById('assetName');
+            const serialEl = document.getElementById('assetSerial');
+            const catEl = document.getElementById('assetCategory');
+            const qtyEl = document.getElementById('assetQuantity');
+
+            const name = nameEl ? nameEl.value.trim() : '';
+            const serial = serialEl ? serialEl.value.trim() : '';
+            const category = catEl ? catEl.value : 'Hardware';
+            const quantity = qtyEl ? (parseInt(qtyEl.value, 10) || 1) : 1;
+
+            if (!name || !serial) {
+                alert('Item Name and Serial Number / SKU are required.');
+                return;
+            }
+
+            if (assetMsg) {
+                assetMsg.textContent = 'Registering asset...';
+                assetMsg.style.color = 'var(--text-muted)';
+            }
+
+            try {
+                const res = await fetch('/api/inventory/add-asset/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, serial, category, quantity })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    if (assetMsg) {
+                        assetMsg.textContent = 'Asset registered successfully!';
+                        assetMsg.style.color = 'var(--success-green)';
+                    }
+                    setTimeout(() => {
+                        closeAssetModal();
+                        loadInventoryData();
+                    }, 500);
+                } else {
+                    if (assetMsg) {
+                        assetMsg.textContent = data.message || 'Error saving asset';
+                        assetMsg.style.color = 'var(--danger-red)';
+                    }
+                }
+            } catch (e) {
+                if (assetMsg) {
+                    assetMsg.textContent = 'Connection error';
+                    assetMsg.style.color = 'var(--danger-red)';
+                }
+            }
+        }
+
+        async function deleteAsset(id) {
+            if (!confirm('Are you sure you want to delete this asset from inventory?')) return;
+            try {
+                const res = await fetch('/api/inventory/delete-asset/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    const row = document.getElementById(`asset-row-${id}`);
+                    if (row) row.remove();
+                    loadInventoryData();
+                } else {
+                    alert(data.message || 'Failed to delete asset');
+                }
+            } catch (e) {
+                alert('Connection error');
+            }
+        }
+
+        async function loadInventoryData() {
+            try {
+                const res = await fetch('/api/inventory/data/');
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    const totalEl = document.getElementById('stat-total-assets');
+                    const assignedEl = document.getElementById('stat-assigned-assets');
+                    const stockEl = document.getElementById('stat-stock-assets');
+
+                    if (totalEl) totalEl.textContent = data.total_assets;
+                    if (assignedEl) assignedEl.textContent = data.assigned_assets;
+                    if (stockEl) stockEl.textContent = data.in_stock;
+
+                    const tbody = document.getElementById('inventoryTableBody');
+                    if (tbody) {
+                        tbody.innerHTML = '';
+                        if (!data.items || data.items.length === 0) {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                        No assets registered yet. Click "Register Asset" above to add your first piece of hardware or supply!
+                                    </td>
+                                </tr>
+                            `;
+                        } else {
+                            data.items.forEach(item => {
+                                const tr = document.createElement('tr');
+                                tr.id = `asset-row-${item.id}`;
+                                tr.innerHTML = `
+                                    <td style="font-weight:600; color:var(--text-primary);">${item.name}</td>
+                                    <td style="font-family: monospace; color: var(--text-secondary);">${item.sku}</td>
+                                    <td>${item.category}</td>
+                                    <td>${item.quantity}</td>
+                                    <td><span class="badge ${item.quantity > 0 ? 'badge-green' : 'badge-red'}">${item.status}</span></td>
+                                    <td style="text-align: right;">
+                                        <button class="btn btn-ghost btn-sm" onclick="deleteAsset(${item.id})" style="color: var(--danger-red);">Delete</button>
+                                    </td>
+                                `;
+                                tbody.appendChild(tr);
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to reload inventory data', e);
+            }
+        }
+    </script>
+</body>
+
+</html>

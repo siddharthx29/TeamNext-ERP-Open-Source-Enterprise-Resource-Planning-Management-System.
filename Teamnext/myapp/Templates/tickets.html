@@ -1,0 +1,1071 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets Management - TeamNext ERP</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        /* Tickets Command Center Enhancements */
+        .tickets-toolbar {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tickets-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 240px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 7px 12px 7px 32px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background-color: var(--page-bg);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .filter-pill {
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--page-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .filter-pill:hover, .filter-pill.active {
+            background: var(--primary-accent);
+            color: #ffffff;
+            border-color: var(--primary-accent);
+        }
+
+        .view-switch {
+            display: inline-flex;
+            background: var(--page-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+        }
+
+        .view-btn {
+            border: none;
+            background: transparent;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+
+        .view-btn.active {
+            background: var(--panel-bg);
+            color: var(--primary-accent);
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+        }
+
+        /* Ticket Cards */
+        .ticket-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .ticket-card:hover {
+            border-color: #CBD5E1;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .ticket-id-tag {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            font-family: monospace;
+            background: var(--page-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .status-badge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 7px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: capitalize;
+        }
+
+        .status-badge.status-open {
+            background: #FEF3C7;
+            color: #92400E;
+            border: 1px solid #FDE68A;
+        }
+
+        .status-badge.status-in_progress {
+            background: #F0F9FF;
+            color: #075985;
+            border: 1px solid #BAE6FD;
+        }
+
+        .status-badge.status-resolved, .status-badge.status-closed {
+            background: #F0FDF4;
+            color: #166534;
+            border: 1px solid #DCFCE7;
+        }
+
+        .status-select-inline {
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            background: var(--page-bg);
+            color: var(--text-primary);
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Kanban Board View */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .kanban-col {
+            background: var(--page-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            min-height: 480px;
+        }
+
+        .kanban-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .kanban-header .count-pill {
+            background: var(--panel-bg);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Ticket Detail Modal */
+        .ticket-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .ticket-modal {
+            background: var(--panel-bg);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 620px;
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.97); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .ticket-modal-header {
+            padding: 16px 20px;
+            background: var(--page-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ticket-modal-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .ticket-modal-footer {
+            padding: 14px 20px;
+            background: var(--page-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .assignee-avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--primary-accent-light);
+            color: var(--primary-accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="tickets" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Tickets & Issue Tracker" action_label="+ Raise Ticket" action_onclick="document.getElementById('tTitle').focus()" %}
+
+        <main class="content-area">
+            <!-- Analytics Stat Cards Grid -->
+            <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px;">
+                <div class="stat-card">
+                    <div class="stat-label">Total Active Tickets</div>
+                    <div class="stat-value" id="statTotalVal">{{ analytics.total|default:tickets.count }}</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● Logged in workspace</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Open / Unresolved</div>
+                    <div class="stat-value" id="statOpenVal" style="color: var(--danger-red);">{{ analytics.open|default:0 }}</div>
+                    <div class="stat-delta delta-down">● Action required</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">In Progress</div>
+                    <div class="stat-value" id="statInProgVal" style="color: var(--warning-amber);">{{ analytics.in_progress|default:0 }}</div>
+                    <div class="stat-delta" style="color: var(--warning-amber);">● Active engineering</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Resolved / Closed</div>
+                    <div class="stat-value" id="statResolvedVal" style="color: var(--success-green);">{{ analytics.resolved|default:0 }}</div>
+                    <div class="stat-delta delta-up">● Resolved issues</div>
+                </div>
+            </div>
+
+            <!-- Toolbar: Search, Filters & View Toggle -->
+            <div class="tickets-toolbar">
+                <div class="tickets-filter-group">
+                    <div class="search-box">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input id="searchTickets" type="text" placeholder="Search ticket title, assignee, project...">
+                    </div>
+
+                    <div style="display: flex; gap: 4px;" id="statusFilterPills">
+                        <span class="filter-pill active" data-status="all">All</span>
+                        <span class="filter-pill" data-status="open">Open</span>
+                        <span class="filter-pill" data-status="in_progress">In Progress</span>
+                        <span class="filter-pill" data-status="resolved">Resolved</span>
+                    </div>
+
+                    <select id="priorityFilter" style="font-size: 12px; padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--page-bg);">
+                        <option value="all">All Priorities</option>
+                        <option value="high">High Priority</option>
+                        <option value="medium">Medium Priority</option>
+                        <option value="low">Low Priority</option>
+                    </select>
+
+                    <select id="projectFilter" style="font-size: 12px; padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--page-bg);">
+                        <option value="all">All Projects</option>
+                        {% for p in projects %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="view-switch">
+                    <button id="btnGridView" class="view-btn active" onclick="switchView('grid')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        <span>Roster</span>
+                    </button>
+                    <button id="btnKanbanView" class="view-btn" onclick="switchView('kanban')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="5" height="18"></rect>
+                            <rect x="10" y="3" width="5" height="12"></rect>
+                            <rect x="17" y="3" width="5" height="15"></rect>
+                        </svg>
+                        <span>Kanban Board</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Grid: Form Panels + Ticket Roster/Board -->
+            <div class="grid-2" style="grid-template-columns: 340px 1fr;">
+                <!-- Left Column: Forms -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Raise New Ticket Panel -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"></path>
+                                    <line x1="12" y1="9" x2="12" y2="15"></line>
+                                    <line x1="9" y1="12" x2="15" y2="12"></line>
+                                </svg>
+                                <span>Raise New Ticket</span>
+                            </span>
+                        </div>
+                        <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
+                            <div class="form-row">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Project</label>
+                                    <select id="projSel">
+                                        {% for p in projects %}
+                                        <option value="{{ p.id }}">{{ p.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Priority</label>
+                                    <select id="prioritySel">
+                                        <option value="high">High</option>
+                                        <option value="medium" selected>Medium</option>
+                                        <option value="low">Low</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Ticket Title</label>
+                                <input id="tTitle" placeholder="Short descriptive summary">
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Initial Status</label>
+                                <select id="statusSel">
+                                    <option value="open" selected>Open</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="resolved">Resolved</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Description</label>
+                                <textarea id="tDesc" rows="3" placeholder="Steps to reproduce, error details..."></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Assign to Developer</label>
+                                <select id="assigneeSel">
+                                    <option value="">-- Unassigned --</option>
+                                    {% for dev in developers %}
+                                    <option value="{{ dev.email }}">{{ dev.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <button id="createBtn" class="btn btn-primary" style="width: 100%; margin-top: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Submit Ticket</span>
+                            </button>
+                            <div id="status" style="font-size: 11px; text-align: center; min-height: 14px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Developer Quick Onboarding Panel -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <line x1="19" y1="8" x2="19" y2="14"></line>
+                                    <line x1="16" y1="11" x2="22" y2="11"></line>
+                                </svg>
+                                <span>Developer Quick Onboarding</span>
+                            </span>
+                        </div>
+                        <div class="panel-body" style="display: flex; flex-direction: column; gap: 8px;">
+                            <input id="devName" placeholder="Developer Full Name">
+                            <input id="devEmail" placeholder="Developer Email Address">
+                            <div class="form-row">
+                                <button id="reqOtpBtn" class="btn btn-ghost btn-sm" style="flex: 1;">Request OTP</button>
+                                <button id="verifyOtpBtn" class="btn btn-primary btn-sm" style="flex: 1;">Verify & Add</button>
+                            </div>
+                            <input id="devOtp" placeholder="Enter OTP code to verify" maxlength="6">
+                            <div id="devStatus" style="font-size: 11px; text-align: center; min-height: 14px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Tickets View Container -->
+                <div>
+                    <!-- Roster / Grid View -->
+                    <div id="gridView" class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="8" y1="6" x2="21" y2="6"></line>
+                                    <line x1="8" y1="12" x2="21" y2="12"></line>
+                                    <line x1="8" y1="18" x2="21" y2="18"></line>
+                                    <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                                    <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                                    <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                                </svg>
+                                <span>Ticket Registry</span>
+                            </span>
+                            <span style="font-size: 11px; color: var(--text-muted);" id="visibleCountTag">Showing {{ recent|length }} tickets</span>
+                        </div>
+                        <div class="panel-body" style="max-height: calc(100vh - 250px); overflow-y: auto;">
+                            <div id="ticketsRosterList">
+                                {% if recent %}
+                                {% for t in recent %}
+                                <div class="ticket-card item-ticket"
+                                    data-ticket-id="{{ t.id }}"
+                                    data-status="{{ t.status|default:'open' }}"
+                                    data-priority="{{ t.priority }}"
+                                    data-project-id="{{ t.project.id }}"
+                                    data-search-text="{{ t.title|lower }} {{ t.description|lower }} {{ t.project.name|lower }} {{ t.employee.name|default:'unassigned'|lower }}">
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                            <span class="ticket-id-tag">#{{ t.id }}</span>
+                                            <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ t.title }}</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span class="badge {% if t.priority == 'high' %}badge-red{% elif t.priority == 'medium' %}badge-amber{% else %}badge-blue{% endif %}">
+                                                {{ t.priority|upper }}
+                                            </span>
+                                            <span class="status-badge status-{{ t.status|default:'open' }}">
+                                                {{ t.get_status_display|default:t.status|default:"Open" }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid-2" style="margin-bottom: 6px; font-size: 11px; color: var(--text-muted); grid-template-columns: 1fr 1fr;">
+                                        <div>Project: <strong style="color: var(--text-primary);">{{ t.project.name }}</strong></div>
+                                        <div style="display: flex; align-items: center; gap: 4px;">
+                                            Assignee:
+                                            <span class="assignee-avatar">{{ t.employee.name|default:"U"|slice:":1" }}</span>
+                                            <strong style="color: {% if t.employee %}var(--text-primary){% else %}var(--warning-amber){% endif %};">
+                                                {{ t.employee.name|default:"Unassigned" }}
+                                            </strong>
+                                        </div>
+                                    </div>
+
+                                    <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; border-top: 1px solid var(--border-subtle); padding-top: 6px; margin-top: 6px;">
+                                        {{ t.description|truncatewords:28 }}
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 6px;">
+                                        <div>Logged: {{ t.created_at|date:"M d, Y" }}</div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <select class="status-select-inline" onchange="updateTicketStatus({{ t.id }}, this.value)">
+                                                <option value="open" {% if t.status == 'open' %}selected{% endif %}>Open</option>
+                                                <option value="in_progress" {% if t.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                                <option value="resolved" {% if t.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                                <option value="closed" {% if t.status == 'closed' %}selected{% endif %}>Closed</option>
+                                            </select>
+                                            <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" 
+                                                    onclick="openTicketModal({{ t.id }}, '{{ t.title|escapejs }}', '{{ t.description|escapejs }}', '{{ t.project.name|escapejs }}', '{{ t.priority }}', '{{ t.status|default:'open' }}', '{{ t.employee.name|default:''|escapejs }}', '{{ t.employee.email|default:''|escapejs }}', '{{ t.created_at|date:"M d, Y H:i" }}')">
+                                                Details
+                                            </button>
+                                            <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px; color: var(--danger-red);" onclick="deleteTicket({{ t.id }})">
+                                                <svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#trash"></use></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px;">
+                                    No tickets currently raised. Use the left form to create a new ticket.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kanban Board View -->
+                    <div id="kanbanView" class="kanban-board" style="display: none;">
+                        <!-- Open Column -->
+                        <div class="kanban-col" id="colOpen">
+                            <div class="kanban-header" style="color: #92400E;">
+                                <span>🔴 Open</span>
+                                <span class="count-pill" id="kanbanOpenCount">0</span>
+                            </div>
+                            <div class="kanban-cards" id="kanbanOpenList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        </div>
+
+                        <!-- In Progress Column -->
+                        <div class="kanban-col" id="colInProgress">
+                            <div class="kanban-header" style="color: #075985;">
+                                <span>⚡ In Progress</span>
+                                <span class="count-pill" id="kanbanInProgCount">0</span>
+                            </div>
+                            <div class="kanban-cards" id="kanbanInProgList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        </div>
+
+                        <!-- Resolved Column -->
+                        <div class="kanban-col" id="colResolved">
+                            <div class="kanban-header" style="color: #065F46;">
+                                <span>✅ Resolved / Closed</span>
+                                <span class="count-pill" id="kanbanResolvedCount">0</span>
+                            </div>
+                            <div class="kanban-cards" id="kanbanResolvedList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketModalBackdrop" class="ticket-modal-backdrop" onclick="if(event.target===this) closeTicketModal()">
+        <div class="ticket-modal">
+            <div class="ticket-modal-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="ticket-id-tag" id="modalTicketIdTag">#0</span>
+                    <span style="font-weight: 700; font-size: 14px;" id="modalTicketTitle">Ticket Title</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="closeTicketModal()">✕</button>
+            </div>
+            <div class="ticket-modal-body">
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <span id="modalPriorityBadge" class="badge badge-amber">MEDIUM</span>
+                    <span id="modalStatusBadge" class="status-badge status-open">Open</span>
+                    <span style="font-size: 11px; color: var(--text-muted);" id="modalProjectName">Project: Web</span>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;" id="modalLoggedDate">Logged: --</span>
+                </div>
+
+                <div>
+                    <label style="font-size: 11px; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">DESCRIPTION</label>
+                    <div id="modalDescription" style="font-size: 13px; color: var(--text-primary); background: var(--page-bg); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); line-height: 1.5; white-space: pre-wrap;"></div>
+                </div>
+
+                <div class="form-row" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Update Status</label>
+                        <select id="modalStatusSelect" style="width: 100%; font-size: 12px; padding: 6px;">
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>Reassign Developer</label>
+                        <select id="modalAssigneeSelect" style="width: 100%; font-size: 12px; padding: 6px;">
+                            <option value="">-- Unassigned --</option>
+                            {% for dev in developers %}
+                            <option value="{{ dev.email }}">{{ dev.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="ticket-modal-footer">
+                <button class="btn btn-ghost btn-sm" style="color: var(--danger-red);" onclick="deleteCurrentModalTicket()">
+                    <svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#trash"></use></svg> Delete Ticket
+                </button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-ghost btn-sm" onclick="closeTicketModal()">Close</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveModalChanges()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentModalTicketId = null;
+
+        // View Mode Switcher
+        function switchView(viewMode) {
+            const gridView = document.getElementById('gridView');
+            const kanbanView = document.getElementById('kanbanView');
+            const btnGrid = document.getElementById('btnGridView');
+            const btnKanban = document.getElementById('btnKanbanView');
+
+            if (viewMode === 'kanban') {
+                gridView.style.display = 'none';
+                kanbanView.style.display = 'grid';
+                btnGrid.classList.remove('active');
+                btnKanban.classList.add('active');
+                renderKanbanBoard();
+            } else {
+                gridView.style.display = 'block';
+                kanbanView.style.display = 'none';
+                btnKanban.classList.remove('active');
+                btnGrid.classList.add('active');
+            }
+        }
+
+        // Render Kanban Swimlanes dynamically from DOM Roster
+        function renderKanbanBoard() {
+            const openList = document.getElementById('kanbanOpenList');
+            const inProgList = document.getElementById('kanbanInProgList');
+            const resolvedList = document.getElementById('kanbanResolvedList');
+
+            openList.innerHTML = '';
+            inProgList.innerHTML = '';
+            resolvedList.innerHTML = '';
+
+            let openCount = 0, inProgCount = 0, resolvedCount = 0;
+            const items = document.querySelectorAll('.item-ticket');
+
+            items.forEach(card => {
+                if (card.style.display === 'none') return;
+
+                const id = card.dataset.ticketId;
+                const status = card.dataset.status || 'open';
+                const priority = card.dataset.priority || 'medium';
+                const title = card.querySelector('strong, span[style*="font-weight: 600"]').textContent;
+                const project = card.querySelector('strong').textContent;
+
+                const kanbanCard = document.createElement('div');
+                kanbanCard.className = 'ticket-card';
+                kanbanCard.style.padding = '10px 12px';
+                kanbanCard.style.marginBottom = '0';
+                kanbanCard.style.borderLeft = card.style.borderLeft;
+                kanbanCard.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                        <span class="ticket-id-tag">#${id}</span>
+                        <span class="badge ${priority === 'high' ? 'badge-red' : (priority === 'medium' ? 'badge-amber' : 'badge-blue')}">${priority.toUpperCase()}</span>
+                    </div>
+                    <div style="font-weight: 600; font-size: 12px; color: var(--text-primary); margin-bottom: 4px;">${title}</div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 6px;">${project}</div>
+                    <select class="status-select-inline" style="width: 100%;" onchange="updateTicketStatus(${id}, this.value)">
+                        <option value="open" ${status === 'open' ? 'selected' : ''}>Open</option>
+                        <option value="in_progress" ${status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="resolved" ${status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                        <option value="closed" ${status === 'closed' ? 'selected' : ''}>Closed</option>
+                    </select>
+                `;
+
+                if (status === 'open') {
+                    openList.appendChild(kanbanCard);
+                    openCount++;
+                } else if (status === 'in_progress') {
+                    inProgList.appendChild(kanbanCard);
+                    inProgCount++;
+                } else {
+                    resolvedList.appendChild(kanbanCard);
+                    resolvedCount++;
+                }
+            });
+
+            document.getElementById('kanbanOpenCount').textContent = openCount;
+            document.getElementById('kanbanInProgCount').textContent = inProgCount;
+            document.getElementById('kanbanResolvedCount').textContent = resolvedCount;
+        }
+
+        // Live Filtering Logic
+        function applyFilters() {
+            const query = document.getElementById('searchTickets').value.toLowerCase().trim();
+            const selectedStatus = document.querySelector('#statusFilterPills .filter-pill.active').dataset.status;
+            const selectedPriority = document.getElementById('priorityFilter').value;
+            const selectedProject = document.getElementById('projectFilter').value;
+
+            const cards = document.querySelectorAll('.item-ticket');
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const searchText = card.dataset.searchText || '';
+                const cardStatus = card.dataset.status || 'open';
+                const cardPriority = card.dataset.priority || 'medium';
+                const cardProject = card.dataset.projectId || '';
+
+                const matchesQuery = !query || searchText.includes(query);
+                const matchesStatus = (selectedStatus === 'all') || (cardStatus === selectedStatus) || (selectedStatus === 'resolved' && (cardStatus === 'resolved' || cardStatus === 'closed'));
+                const matchesPriority = (selectedPriority === 'all') || (cardPriority === selectedPriority);
+                const matchesProject = (selectedProject === 'all') || (cardProject === selectedProject);
+
+                if (matchesQuery && matchesStatus && matchesPriority && matchesProject) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            const tag = document.getElementById('visibleCountTag');
+            if (tag) tag.textContent = `Showing ${visibleCount} tickets`;
+
+            if (document.getElementById('kanbanView').style.display !== 'none') {
+                renderKanbanBoard();
+            }
+        }
+
+        document.getElementById('searchTickets').addEventListener('input', applyFilters);
+        document.getElementById('priorityFilter').addEventListener('change', applyFilters);
+        document.getElementById('projectFilter').addEventListener('change', applyFilters);
+
+        document.querySelectorAll('#statusFilterPills .filter-pill').forEach(pill => {
+            pill.addEventListener('click', function () {
+                document.querySelectorAll('#statusFilterPills .filter-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        // AJAX Status Update
+        async function updateTicketStatus(ticketId, newStatus) {
+            try {
+                const res = await fetch('/api/tickets/update-status/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_id: ticketId, status: newStatus })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    // Update DOM card status attribute
+                    const card = document.querySelector(`.item-ticket[data-ticket-id="${ticketId}"]`);
+                    if (card) {
+                        card.dataset.status = newStatus;
+                        const badge = card.querySelector('.status-badge');
+                        if (badge) {
+                            badge.className = `status-badge status-${newStatus}`;
+                            badge.textContent = data.ticket.status_display;
+                        }
+                    }
+                    applyFilters();
+                } else {
+                    alert(data.message || 'Failed to update status');
+                }
+            } catch (e) {
+                console.error('Error updating status:', e);
+            }
+        }
+
+        // AJAX Assign Ticket
+        async function assignTicket(ticketId, assigneeEmail) {
+            try {
+                const res = await fetch('/api/tickets/assign/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_id: ticketId, assignee_email: assigneeEmail })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Failed to reassign ticket');
+                }
+            } catch (e) {
+                console.error('Error reassigning ticket:', e);
+            }
+        }
+
+        // AJAX Delete Ticket
+        async function deleteTicket(ticketId) {
+            if (!confirm('Are you sure you want to delete ticket #' + ticketId + '?')) return;
+            try {
+                const res = await fetch('/api/tickets/delete/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticket_id: ticketId })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    const card = document.querySelector(`.item-ticket[data-ticket-id="${ticketId}"]`);
+                    if (card) card.remove();
+                    applyFilters();
+                } else {
+                    alert(data.message || 'Failed to delete ticket');
+                }
+            } catch (e) {
+                console.error('Error deleting ticket:', e);
+            }
+        }
+
+        // Ticket Detail Modal Management
+        function openTicketModal(id, title, description, project, priority, status, assigneeName, assigneeEmail, createdDate) {
+            currentModalTicketId = id;
+            document.getElementById('modalTicketIdTag').textContent = '#' + id;
+            document.getElementById('modalTicketTitle').textContent = title;
+            document.getElementById('modalDescription').textContent = description || 'No detailed description provided.';
+            document.getElementById('modalProjectName').textContent = 'Project: ' + project;
+            document.getElementById('modalLoggedDate').textContent = 'Logged: ' + createdDate;
+
+            const pBadge = document.getElementById('modalPriorityBadge');
+            pBadge.textContent = priority.toUpperCase();
+            pBadge.className = `badge ${priority === 'high' ? 'badge-red' : (priority === 'medium' ? 'badge-amber' : 'badge-blue')}`;
+
+            const sBadge = document.getElementById('modalStatusBadge');
+            sBadge.textContent = status.replace('_', ' ').toUpperCase();
+            sBadge.className = `status-badge status-${status}`;
+
+            document.getElementById('modalStatusSelect').value = status;
+            document.getElementById('modalAssigneeSelect').value = assigneeEmail || '';
+
+            document.getElementById('ticketModalBackdrop').style.display = 'flex';
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticketModalBackdrop').style.display = 'none';
+            currentModalTicketId = null;
+        }
+
+        async function saveModalChanges() {
+            if (!currentModalTicketId) return;
+            const status = document.getElementById('modalStatusSelect').value;
+            const assignee = document.getElementById('modalAssigneeSelect').value;
+
+            await updateTicketStatus(currentModalTicketId, status);
+            await assignTicket(currentModalTicketId, assignee);
+            closeTicketModal();
+        }
+
+        async function deleteCurrentModalTicket() {
+            if (!currentModalTicketId) return;
+            const id = currentModalTicketId;
+            closeTicketModal();
+            await deleteTicket(id);
+        }
+
+        // Raise Ticket AJAX Form
+        document.getElementById('createBtn').addEventListener('click', async function () {
+            const title = document.getElementById('tTitle').value.trim();
+            const desc = document.getElementById('tDesc').value.trim();
+            const proj = document.getElementById('projSel').value;
+            const priority = document.getElementById('prioritySel').value;
+            const statusVal = document.getElementById('statusSel').value;
+            const assignee = document.getElementById('assigneeSel').value;
+            const status = document.getElementById('status');
+
+            if (!title || !desc) {
+                status.textContent = 'Title and description are required.';
+                status.style.color = 'var(--danger-red)';
+                return;
+            }
+            status.textContent = 'Creating ticket...';
+            status.style.color = 'var(--text-muted)';
+            try {
+                const res = await fetch('/dashboard/create-ticket/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description: desc, project_id: proj, priority, status: statusVal, assignee })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    status.textContent = 'Ticket created successfully!';
+                    status.style.color = 'var(--success-green)';
+                    setTimeout(() => location.reload(), 600);
+                } else {
+                    status.textContent = data.message || 'Failed';
+                    status.style.color = 'var(--danger-red)';
+                }
+            } catch (e) {
+                status.textContent = 'Error creating ticket';
+                status.style.color = 'var(--danger-red)';
+            }
+        });
+
+        // Developer Onboarding AJAX
+        async function refreshDevelopers(selectedEmail = null) {
+            try {
+                const res = await fetch('/api/developers/');
+                const data = await res.json();
+                if (data.status === 'ok' && data.developers) {
+                    const sel = document.getElementById('assigneeSel');
+                    const modalSel = document.getElementById('modalAssigneeSelect');
+
+                    [sel, modalSel].forEach(selectEl => {
+                        if (selectEl) {
+                            const curVal = selectedEmail || selectEl.value;
+                            selectEl.innerHTML = '<option value="">-- Unassigned --</option>';
+                            data.developers.forEach(d => {
+                                const opt = document.createElement('option');
+                                opt.value = d.email;
+                                opt.textContent = `${d.name} (${d.role || 'Developer'})`;
+                                selectEl.appendChild(opt);
+                            });
+                            if (curVal) selectEl.value = curVal;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Error refreshing developers:', e);
+            }
+        }
+
+        const reqOtpBtn = document.getElementById('reqOtpBtn');
+        if (reqOtpBtn) {
+            reqOtpBtn.addEventListener('click', async function () {
+                const name = document.getElementById('devName').value.trim();
+                const email = document.getElementById('devEmail').value.trim();
+                const st = document.getElementById('devStatus');
+                if (!name || !email) {
+                    st.textContent = 'Developer full name and email are required.';
+                    st.style.color = 'var(--danger-red)';
+                    return;
+                }
+                reqOtpBtn.disabled = true;
+                st.textContent = 'Generating and dispatching OTP...';
+                st.style.color = 'var(--text-muted)';
+                try {
+                    const res = await fetch('/api/add-developer/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email })
+                    });
+                    const data = await res.json();
+                    reqOtpBtn.disabled = false;
+                    if (data.status === 'ok') {
+                        st.textContent = data.message || 'OTP sent to developer & company email!';
+                        st.style.color = 'var(--success-green)';
+                        const otpInput = document.getElementById('devOtp');
+                        if (otpInput) {
+                            otpInput.focus();
+                            otpInput.placeholder = 'Enter 6-digit OTP code';
+                        }
+                    } else {
+                        st.textContent = data.message || 'Failed to dispatch OTP';
+                        st.style.color = 'var(--danger-red)';
+                    }
+                } catch (e) {
+                    reqOtpBtn.disabled = false;
+                    st.textContent = 'Connection error requesting OTP';
+                    st.style.color = 'var(--danger-red)';
+                }
+            });
+        }
+
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        if (verifyOtpBtn) {
+            verifyOtpBtn.addEventListener('click', async function () {
+                const otp = document.getElementById('devOtp').value.trim();
+                const st = document.getElementById('devStatus');
+                if (!otp) {
+                    st.textContent = 'Please enter the 6-digit OTP code received.';
+                    st.style.color = 'var(--danger-red)';
+                    return;
+                }
+                verifyOtpBtn.disabled = true;
+                st.textContent = 'Verifying OTP and activating developer account...';
+                st.style.color = 'var(--text-muted)';
+                try {
+                    const res = await fetch('/api/verify-developer/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ otp })
+                    });
+                    const data = await res.json();
+                    verifyOtpBtn.disabled = false;
+                    if (data.status === 'ok') {
+                        st.textContent = `✓ ${data.developer} onboarded successfully!`;
+                        st.style.color = 'var(--success-green)';
+                        document.getElementById('devName').value = '';
+                        document.getElementById('devEmail').value = '';
+                        document.getElementById('devOtp').value = '';
+                        await refreshDevelopers(data.email);
+                        setTimeout(() => {
+                            if (st.textContent.includes('onboarded successfully')) {
+                                st.textContent = '';
+                            }
+                        }, 5000);
+                    } else {
+                        st.textContent = data.message || 'OTP verification failed';
+                        st.style.color = 'var(--danger-red)';
+                    }
+                } catch (e) {
+                    verifyOtpBtn.disabled = false;
+                    st.textContent = 'Connection error verifying OTP';
+                    st.style.color = 'var(--danger-red)';
+                }
+            });
+        }
+
+        refreshDevelopers();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,518 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Client - TeamNext Enterprise Management Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f8f9fa;
+            color: #333;
+            overflow: hidden;
+        }
+
+        .email-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e1e5e9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e1e5e9;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .compose-btn {
+            margin: 20px;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .compose-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .email-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .email-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .email-item:hover {
+            background: #f8f9ff;
+            transform: translateX(5px);
+        }
+
+        .email-item.unread {
+            background: #F0F7FF;
+            font-weight: 600;
+        }
+
+        .email-sender {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .email-subject {
+            font-weight: 500;
+            margin-bottom: 3px;
+            color: #555;
+        }
+
+        .email-preview {
+            font-size: 12px;
+            color: #777;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .email-time {
+            font-size: 11px;
+            color: #999;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .email-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .email-header h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .email-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .email-body {
+            flex: 1;
+            padding: 20px;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .compose-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .compose-form {
+            background: white;
+            border-radius: 12px;
+            width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .compose-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .compose-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            height: 200px;
+            resize: vertical;
+        }
+
+        .compose-actions {
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        @media (max-width: 768px) {
+            .email-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+
+            .compose-form {
+                width: 95%;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <button class="back-btn" onclick="window.location.href='/dashboard/'">← Back to Dashboard</button>
+
+
+    <form style="display: none;">
+        {% csrf_token %}
+    </form>
+
+    <div class="email-container">
+
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div
+                        style="display:inline-block; background:rgba(255,255,255,0.95); border-radius:14px; padding:8px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                        <img src="{% static 'myapp/images/logo.svg' %}" alt="TeamNext ERP"
+                            style="width:140px; height:auto; display:block;">
+                    </div>
+                </div>
+                <h2 style="margin-top: 10px;">📧 TeamNext Email</h2>
+                <p>Professional Communication Hub</p>
+            </div>
+
+            <button class="compose-btn" onclick="showComposeModal()">✉️ Compose Email</button>
+
+            <div class="email-list" id="emailList">
+
+                <div class="email-item unread"
+                    onclick="openEmail('Welcome to TeamNext!', 'admin@teamnext.com', 'Welcome to our platform! We\'re excited to have you on board.', '10:30 AM')">
+                    <div class="email-sender">TeamNext Admin</div>
+                    <div class="email-subject">Welcome to TeamNext Enterprise Management Tool!</div>
+                    <div class="email-preview">Welcome to our platform! We're excited to have you on board with our
+                        comprehensive software error management system.</div>
+                    <div class="email-time">10:30 AM</div>
+                </div>
+
+                <div class="email-item"
+                    onclick="openEmail('Bug Report #1234', 'dev@company.com', 'Found critical bug in login module', '9:15 AM')">
+                    <div class="email-sender">Rahul Developer</div>
+                    <div class="email-subject">Bug Report #1234 - Login Module</div>
+                    <div class="email-preview">Found critical bug in login module that prevents user authentication...
+                    </div>
+                    <div class="email-time">9:15 AM</div>
+                </div>
+
+                <div class="email-item"
+                    onclick="openEmail('Feature Request', 'pm@company.com', 'New dashboard analytics feature', '8:45 AM')">
+                    <div class="email-sender">Neha PM</div>
+                    <div class="email-subject">Feature Request - Dashboard Analytics</div>
+                    <div class="email-preview">Requesting new analytics feature for the main dashboard...</div>
+                    <div class="email-time">8:45 AM</div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="main-content">
+            <div class="email-header" id="emailHeader">
+                <h3>Select an email to read</h3>
+                <div class="email-meta">
+                    <span>Choose an email from the sidebar</span>
+                </div>
+            </div>
+
+            <div class="email-body" id="emailBody">
+                <p style="text-align: center; color: #666; margin-top: 50px;">
+                    📧 Select an email from the sidebar to view its contents
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="compose-modal" id="composeModal">
+        <div class="compose-form">
+            <div class="compose-header">
+                <h3>Compose New Email</h3>
+                <button class="close-btn" onclick="hideComposeModal()">×</button>
+            </div>
+
+            <form class="compose-body" id="emailForm">
+                <div class="form-group">
+                    <label for="to">To:</label>
+                    <input type="email" id="to" placeholder="recipient@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cc">CC:</label>
+                    <input type="email" id="cc" placeholder="cc@example.com (optional)">
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Subject:</label>
+                    <input type="text" id="subject" placeholder="Email subject" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message:</label>
+                    <textarea id="message" placeholder="Write your message here..." required></textarea>
+                </div>
+            </form>
+
+            <div class="compose-actions">
+                <button class="btn btn-secondary" onclick="hideComposeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="sendEmail()">Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEmail = null;
+
+        function showComposeModal() {
+            document.getElementById('composeModal').style.display = 'flex';
+        }
+
+        function hideComposeModal() {
+            document.getElementById('composeModal').style.display = 'none';
+            document.getElementById('emailForm').reset();
+        }
+
+        function openEmail(subject, sender, content, time) {
+            document.getElementById('emailHeader').innerHTML = `
+                <h3>${subject}</h3>
+                <div class="email-meta">
+                    <span>From: ${sender}</span>
+                    <span>${time}</span>
+                </div>
+            `;
+
+            document.getElementById('emailBody').innerHTML = `
+                <div style="border-left: 4px solid #667eea; padding-left: 20px; margin-bottom: 20px;">
+                    <p><strong>From:</strong> ${sender}</p>
+                    <p><strong>To:</strong> you@company.com</p>
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    <p><strong>Time:</strong> ${time}</p>
+                </div>
+                <div style="line-height: 1.6; white-space: pre-wrap;">${content}</div>
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e1e5e9;">
+                    <button class="btn btn-primary" style="margin-right: 10px;">Reply</button>
+                    <button class="btn btn-secondary">Forward</button>
+                </div>
+            `;
+
+
+            event.currentTarget.classList.remove('unread');
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('to').value;
+            const cc = document.getElementById('cc').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            if (!to || !subject || !message) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            try {
+
+                const response = await fetch('/send-email/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value
+                    },
+                    body: JSON.stringify({
+                        to: to,
+                        cc: cc,
+                        subject: subject,
+                        message: message
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Email sent successfully!');
+                    hideComposeModal();
+
+
+                    addToEmailList(subject, to, message.substring(0, 50) + '...', 'Just now', false);
+                } else {
+                    alert('Failed to send email. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error sending email:', error);
+                alert('Error sending email. Please check your connection.');
+            }
+        }
+
+        function addToEmailList(subject, sender, preview, time, isUnread = false) {
+            const emailList = document.getElementById('emailList');
+            const emailItem = document.createElement('div');
+            emailItem.className = `email-item ${isUnread ? 'unread' : ''}`;
+            emailItem.onclick = () => openEmail(subject, sender, preview, time);
+
+            emailItem.innerHTML = `
+                <div class="email-sender">To: ${sender}</div>
+                <div class="email-subject">${subject}</div>
+                <div class="email-preview">${preview}</div>
+                <div class="email-time">${time}</div>
+            `;
+
+            emailList.insertBefore(emailItem, emailList.firstChild);
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            console.log('TeamNext Email Client loaded successfully');
+        });
+    </script>
+
+</body>
+
+</html>

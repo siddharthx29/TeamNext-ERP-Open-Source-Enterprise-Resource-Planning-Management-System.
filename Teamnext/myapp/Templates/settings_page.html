@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - TeamNext</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Decorative Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar with tailored SVG symbols -->
+    {% include "components/sidebar.html" with active_page="settings" %}
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Settings" action_label="Save Changes" action_onclick="document.querySelector('form button[type=submit]') ? document.querySelector('form button[type=submit]').click() : null" %}
+
+        <main class="content-area">
+            <div class="grid-2" style="grid-template-columns: 1fr 340px;">
+                <!-- Left: Profile Configuration -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                            </svg>
+                            <span>Organization Profile</span>
+                        </span>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Workspace / Company Legal Name *</label>
+                            <input id="companyName" value="{{ company_name }}" placeholder="Company name">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Direct Contact Phone</label>
+                                <input id="companyPhone" value="{{ co_info.phone|default:'' }}" placeholder="+1 555-0100">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Corporate Website</label>
+                                <input id="companyWebsite" value="{{ co_info.website|default:'' }}" placeholder="https://example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label>Industry & Mission Summary</label>
+                            <textarea id="companyDesc" rows="4" placeholder="Brief organization profile...">{{ co_info.industry|default:'' }}</textarea>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 6px;">
+                            <button id="saveSettingsBtn" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                <span>Save Settings</span>
+                            </button>
+                            <span id="settingsStatus" style="font-size: 12px;"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Live Preview Card -->
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                                <span>Public Tenant Card</span>
+                            </span>
+                        </div>
+                        <div class="panel-body">
+                            <div style="font-size: 16px; font-weight: 700; color: var(--text-primary);" id="previewName">{{ company_name }}</div>
+                            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                                <svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#phone"></use></svg> <span id="previewPhoneValue" style="color: var(--text-secondary);">{{ co_info.phone|default:'-' }}</span>
+                            </div>
+                            <div style="margin-top: 6px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                                <svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#globe"></use></svg> <span id="previewWebsiteValue" style="color: var(--text-secondary);">{{ co_info.website|default:'-' }}</span>
+                            </div>
+                            <hr style="margin: 12px 0; border: 0; border-top: 1px solid var(--border-subtle);">
+                            <div id="previewDesc" style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                                {{ co_info.industry|default:'No description yet.' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-header">
+                            <span class="panel-title">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                <span>System Information</span>
+                            </span>
+                        </div>
+                        <div class="panel-body" style="font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                            <div>Edition: <strong style="color: var(--text-primary);">Enterprise ERP v2.4</strong></div>
+                            <div>Database: <strong style="color: var(--text-primary);">SQLite / Cloud Sync</strong></div>
+                            <div>Tenant ID: <strong style="color: var(--text-primary);">{{ email|slice:":8" }}...</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function updatePreview() {
+            document.getElementById('previewName').textContent = document.getElementById('companyName').value || 'Company Name';
+            document.getElementById('previewPhoneValue').textContent = document.getElementById('companyPhone').value || '-';
+            document.getElementById('previewWebsiteValue').textContent = document.getElementById('companyWebsite').value || '-';
+            document.getElementById('previewDesc').textContent = document.getElementById('companyDesc').value || 'No description yet.';
+        }
+
+        ['companyName', 'companyPhone', 'companyWebsite', 'companyDesc'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', updatePreview);
+        });
+
+        document.getElementById('saveSettingsBtn').addEventListener('click', async function () {
+            const name = document.getElementById('companyName').value.trim();
+            const phone = document.getElementById('companyPhone').value.trim();
+            const website = document.getElementById('companyWebsite').value.trim();
+            const desc = document.getElementById('companyDesc').value.trim();
+            const st = document.getElementById('settingsStatus');
+
+            if (!name) {
+                st.textContent = 'Enter a company name';
+                st.style.color = 'var(--danger-red)';
+                return;
+            }
+            st.textContent = 'Saving changes...';
+            st.style.color = 'var(--text-muted)';
+
+            try {
+                const res = await fetch('/api/save-settings/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        company_name: name,
+                        phone: phone,
+                        website: website,
+                        industry: desc
+                    })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    st.textContent = 'Settings saved successfully!';
+                    st.style.color = 'var(--success-green)';
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    st.textContent = data.message || 'Failed';
+                    st.style.color = 'var(--danger-red)';
+                }
+            } catch (e) {
+                st.textContent = 'Error saving settings';
+                st.style.color = 'var(--danger-red)';
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1097 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JETS327R52"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JETS327R52');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Tasks & Operations - TeamNext ERP</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'myapp/images/logo.svg' %}">
+    <link rel="stylesheet" href="/static/myapp/css/theme.css">
+    <link rel="stylesheet" href="/static/myapp/css/responsive.css">
+    <script src="/static/myapp/js/theme.js"></script>
+    <style>
+        /* Professional Enterprise Kanban Styling */
+        .kanban-board-container {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(260px, 1fr));
+            gap: 16px;
+            overflow-x: auto;
+            padding: 4px 2px 20px 2px;
+            align-items: flex-start;
+        }
+
+        .kanban-lane {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 520px;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .lane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 4px 12px 4px;
+            border-bottom: 1px solid #E2E8F0;
+            margin-bottom: 12px;
+        }
+
+        .lane-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-todo { background: #94A3B8; }
+        .dot-in_progress { background: #3B82F6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+        .dot-in_review { background: #8B5CF6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15); }
+        .dot-completed { background: #10B981; }
+        .dot-blocked { background: #EF4444; }
+
+        .lane-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1E293B;
+            letter-spacing: -0.2px;
+        }
+
+        .lane-count-pill {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748B;
+            background: #E2E8F0;
+            padding: 2px 7px;
+            border-radius: 10px;
+            line-height: 1;
+        }
+
+        .lane-add-btn {
+            background: transparent;
+            border: none;
+            color: #94A3B8;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .lane-add-btn:hover {
+            background: #E2E8F0;
+            color: #1E293B;
+        }
+
+        .task-card-modern {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 13px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .task-card-modern:hover {
+            border-color: #CBD5E1;
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.07);
+            transform: translateY(-2px);
+        }
+
+        .card-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .project-tag {
+            font-size: 11px;
+            font-weight: 600;
+            color: #2563EB;
+            background: #EFF6FF;
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: -0.1px;
+        }
+
+        .priority-badge-soft {
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .prio-urgent { background: #FEF2F2; color: #DC2626; border: 1px solid #FEE2E2; }
+        .prio-high { background: #FFF7ED; color: #EA580C; border: 1px solid #FFEDD5; }
+        .prio-medium { background: #FEFCE8; color: #CA8A04; border: 1px solid #FEF9C3; }
+        .prio-low { background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; }
+
+        .card-task-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0F172A;
+            line-height: 1.4;
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .card-task-desc {
+            font-size: 12px;
+            color: #64748B;
+            line-height: 1.45;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11.5px;
+            color: #64748B;
+            padding-top: 8px;
+            border-top: 1px solid #F1F5F9;
+        }
+
+        .assignee-badge-small {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .assignee-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3B82F6;
+            color: #FFFFFF;
+            font-size: 9.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-action-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .status-select-subtle {
+            flex: 1;
+            padding: 3px 6px;
+            font-size: 11px;
+            color: #475569;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+        .status-select-subtle:hover {
+            border-color: #CBD5E1;
+        }
+
+        .empty-lane-placeholder {
+            text-align: center;
+            padding: 36px 12px;
+            border: 1.5px dashed #CBD5E1;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            margin-top: 4px;
+        }
+
+        .empty-lane-placeholder p {
+            font-size: 12px;
+            color: #94A3B8;
+            margin: 0 0 8px 0;
+        }
+
+        .btn-quick-add {
+            font-size: 11.5px;
+            color: #2563EB;
+            background: transparent;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .btn-quick-add:hover {
+            background: #EFF6FF;
+        }
+    </style>
+</head>
+
+<body class="app-layout">
+    <!-- Subtle 3D Background Layer -->
+    <div class="erp-3d-background" aria-hidden="true">
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-1"></div>
+        <div class="erp-3d-shape erp-3d-sphere erp-3d-sphere-2"></div>
+        <div class="erp-3d-shape erp-3d-ring erp-3d-ring-1"></div>
+        <div class="erp-3d-shape erp-3d-cube erp-3d-cube-1"></div>
+        <div class="erp-3d-shape erp-3d-mesh"></div>
+    </div>
+
+    <!-- Reusable Left Sidebar -->
+    {% include "components/sidebar.html" with active_page="project_management" %}
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Reusable Top Navigation Bar -->
+        {% include "components/topbar.html" with page_title="Project Tasks" action_label="+ Assign Task" action_onclick="openCreateTaskModal()" %}
+
+        <main class="content-area">
+            <!-- Stat Cards Row -->
+            <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="stat-card">
+                    <div class="stat-label">Active Projects</div>
+                    <div class="stat-value" style="color: var(--primary-accent);">{{ stats.project_count|default:"0" }}</div>
+                    <div class="stat-delta delta-up">● Cross-department operations</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Assigned Tasks</div>
+                    <div class="stat-value" style="color: #6366F1;">{{ stats.total_tasks|default:"0" }}</div>
+                    <div class="stat-delta delta-up">● Work items tracked</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">In Progress & Review</div>
+                    <div class="stat-value" style="color: var(--warning-amber);">{{ stats.in_progress_tasks|add:stats.in_review_tasks }}</div>
+                    <div class="stat-delta" style="color: var(--text-muted);">● {{ stats.in_progress_tasks }} in progress, {{ stats.in_review_tasks }} in review</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Completed Deliverables</div>
+                    <div class="stat-value" style="color: var(--success-green);">{{ stats.completed_tasks|default:"0" }} <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">({{ stats.progress_rate }}%)</span></div>
+                    <div class="stat-delta delta-up">● Overall completion</div>
+                </div>
+            </div>
+
+            <!-- Main Panel with Tabs -->
+            <div class="panel">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTaskTab('kanban')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="18" rx="1.5"></rect>
+                            <rect x="14" y="3" width="7" height="10" rx="1.5"></rect>
+                        </svg>
+                        <span>Task Kanban Board</span>
+                    </button>
+                    <button class="tab" onclick="switchTaskTab('table')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                        <span>Task Ledger & Staffing</span>
+                    </button>
+                    <button class="tab" onclick="switchTaskTab('portfolios')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                            <line x1="12" y1="11" x2="12" y2="17"></line>
+                            <line x1="9" y1="14" x2="15" y2="14"></line>
+                        </svg>
+                        <span>Department Portfolios</span>
+                    </button>
+                </div>
+
+                <!-- Live Filters Bar -->
+                <div style="padding: 12px 18px; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #FAFBFD;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <select id="filter_project" onchange="applyFilters()" style="padding: 5px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #FFFFFF;">
+                            <option value="">All Projects</option>
+                            {% for p in raw_projects %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <select id="filter_dept" onchange="applyFilters()" style="padding: 5px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #FFFFFF;">
+                            <option value="">All Departments</option>
+                            {% for d in departments %}
+                            <option value="{{ d.id }}">{{ d.name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <select id="filter_priority" onchange="applyFilters()" style="padding: 5px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #FFFFFF;">
+                            <option value="">All Priorities</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+
+                        <select id="filter_assignee" onchange="applyFilters()" style="padding: 5px 10px; font-size: 12px; border: 1px solid var(--border-color); border-radius: 6px; background: #FFFFFF;">
+                            <option value="">All Assignees</option>
+                            {% for e in employees %}
+                            <option value="{{ e.id }}">{{ e.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()" style="display: inline-flex; align-items: center; gap: 5px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>Assign Task</span>
+                    </button>
+                </div>
+
+                <!-- Tab 1: Clean Native Kanban Board View -->
+                <div id="tab-kanban" class="tab-content active" style="padding: 16px;">
+                    <div class="kanban-board-container">
+                        <!-- LANE 1: TO DO -->
+                        <div class="kanban-lane" id="lane-todo">
+                            <div class="lane-header">
+                                <div class="lane-title-group">
+                                    <span class="status-indicator-dot dot-todo"></span>
+                                    <span class="lane-title">To Do</span>
+                                    <span class="lane-count-pill" id="badge-todo">0</span>
+                                </div>
+                                <button class="lane-add-btn" title="Add task to To Do" onclick="openCreateTaskModalWithStatus('todo')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+                            <div class="lane-cards" id="list-todo">
+                                {% for t in tasks %}
+                                {% if t.status == 'todo' %}
+                                <div class="task-card-modern" data-id="{{ t.id }}" data-project="{{ t.project_id }}" data-dept="{{ t.department_id }}" data-prio="{{ t.priority }}" data-assignee="{{ t.assigned_to_id }}">
+                                    <div class="card-top-row">
+                                        <span class="project-tag">{{ t.project_name }}</span>
+                                        <span class="priority-badge-soft prio-{{ t.priority }}">{{ t.priority|title }}</span>
+                                    </div>
+                                    <div class="card-task-title">{{ t.title }}</div>
+                                    {% if t.description %}
+                                    <div class="card-task-desc">{{ t.description }}</div>
+                                    {% endif %}
+                                    <div class="card-meta-bar">
+                                        <span style="font-size: 11px; background: #F1F5F9; padding: 2px 6px; border-radius: 4px;">{{ t.department_name }}</span>
+                                        <span>{% if t.due_date %}Due {{ t.due_date }}{% else %}No due date{% endif %}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11.5px;">
+                                        <div class="assignee-badge-small">
+                                            <div class="assignee-circle">{{ t.assigned_to_name|slice:":2"|upper }}</div>
+                                            <span>{{ t.assigned_to_name }}</span>
+                                        </div>
+                                        <span style="color: #64748B; font-size: 11px;">{{ t.logged_hours }}h / {{ t.estimated_hours }}h</span>
+                                    </div>
+                                    <div class="card-action-bar">
+                                        <select class="status-select-subtle" onchange="quickUpdateStatus('{{ t.id }}', this.value)">
+                                            <option value="todo" selected>To Do</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="in_review">In Review</option>
+                                            <option value="completed">Done</option>
+                                            <option value="blocked">Blocked</option>
+                                        </select>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px;" onclick="openEditModal('{{ t.id }}', '{{ t.title|escapejs }}', '{{ t.description|escapejs }}', '{{ t.department_id }}', '{{ t.assigned_to_id }}', '{{ t.priority }}', '{{ t.status }}', '{{ t.due_date }}', '{{ t.logged_hours }}')">Edit</button>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px; color: #DC2626;" onclick="deleteTask('{{ t.id }}')">&times;</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- LANE 2: IN PROGRESS -->
+                        <div class="kanban-lane" id="lane-in_progress">
+                            <div class="lane-header">
+                                <div class="lane-title-group">
+                                    <span class="status-indicator-dot dot-in_progress"></span>
+                                    <span class="lane-title">In Progress</span>
+                                    <span class="lane-count-pill" id="badge-in_progress">0</span>
+                                </div>
+                                <button class="lane-add-btn" title="Add task to In Progress" onclick="openCreateTaskModalWithStatus('in_progress')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+                            <div class="lane-cards" id="list-in_progress">
+                                {% for t in tasks %}
+                                {% if t.status == 'in_progress' %}
+                                <div class="task-card-modern" data-id="{{ t.id }}" data-project="{{ t.project_id }}" data-dept="{{ t.department_id }}" data-prio="{{ t.priority }}" data-assignee="{{ t.assigned_to_id }}">
+                                    <div class="card-top-row">
+                                        <span class="project-tag">{{ t.project_name }}</span>
+                                        <span class="priority-badge-soft prio-{{ t.priority }}">{{ t.priority|title }}</span>
+                                    </div>
+                                    <div class="card-task-title">{{ t.title }}</div>
+                                    {% if t.description %}
+                                    <div class="card-task-desc">{{ t.description }}</div>
+                                    {% endif %}
+                                    <div class="card-meta-bar">
+                                        <span style="font-size: 11px; background: #F1F5F9; padding: 2px 6px; border-radius: 4px;">{{ t.department_name }}</span>
+                                        <span>{% if t.due_date %}Due {{ t.due_date }}{% else %}No due date{% endif %}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11.5px;">
+                                        <div class="assignee-badge-small">
+                                            <div class="assignee-circle">{{ t.assigned_to_name|slice:":2"|upper }}</div>
+                                            <span>{{ t.assigned_to_name }}</span>
+                                        </div>
+                                        <span style="color: #64748B; font-size: 11px;">{{ t.logged_hours }}h / {{ t.estimated_hours }}h</span>
+                                    </div>
+                                    <div class="card-action-bar">
+                                        <select class="status-select-subtle" onchange="quickUpdateStatus('{{ t.id }}', this.value)">
+                                            <option value="todo">To Do</option>
+                                            <option value="in_progress" selected>In Progress</option>
+                                            <option value="in_review">In Review</option>
+                                            <option value="completed">Done</option>
+                                            <option value="blocked">Blocked</option>
+                                        </select>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px;" onclick="openEditModal('{{ t.id }}', '{{ t.title|escapejs }}', '{{ t.description|escapejs }}', '{{ t.department_id }}', '{{ t.assigned_to_id }}', '{{ t.priority }}', '{{ t.status }}', '{{ t.due_date }}', '{{ t.logged_hours }}')">Edit</button>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px; color: #DC2626;" onclick="deleteTask('{{ t.id }}')">&times;</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- LANE 3: IN REVIEW -->
+                        <div class="kanban-lane" id="lane-in_review">
+                            <div class="lane-header">
+                                <div class="lane-title-group">
+                                    <span class="status-indicator-dot dot-in_review"></span>
+                                    <span class="lane-title">In Review</span>
+                                    <span class="lane-count-pill" id="badge-in_review">0</span>
+                                </div>
+                                <button class="lane-add-btn" title="Add task to In Review" onclick="openCreateTaskModalWithStatus('in_review')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+                            <div class="lane-cards" id="list-in_review">
+                                {% for t in tasks %}
+                                {% if t.status == 'in_review' %}
+                                <div class="task-card-modern" data-id="{{ t.id }}" data-project="{{ t.project_id }}" data-dept="{{ t.department_id }}" data-prio="{{ t.priority }}" data-assignee="{{ t.assigned_to_id }}">
+                                    <div class="card-top-row">
+                                        <span class="project-tag">{{ t.project_name }}</span>
+                                        <span class="priority-badge-soft prio-{{ t.priority }}">{{ t.priority|title }}</span>
+                                    </div>
+                                    <div class="card-task-title">{{ t.title }}</div>
+                                    {% if t.description %}
+                                    <div class="card-task-desc">{{ t.description }}</div>
+                                    {% endif %}
+                                    <div class="card-meta-bar">
+                                        <span style="font-size: 11px; background: #F1F5F9; padding: 2px 6px; border-radius: 4px;">{{ t.department_name }}</span>
+                                        <span>{% if t.due_date %}Due {{ t.due_date }}{% else %}No due date{% endif %}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11.5px;">
+                                        <div class="assignee-badge-small">
+                                            <div class="assignee-circle">{{ t.assigned_to_name|slice:":2"|upper }}</div>
+                                            <span>{{ t.assigned_to_name }}</span>
+                                        </div>
+                                        <span style="color: #64748B; font-size: 11px;">{{ t.logged_hours }}h / {{ t.estimated_hours }}h</span>
+                                    </div>
+                                    <div class="card-action-bar">
+                                        <select class="status-select-subtle" onchange="quickUpdateStatus('{{ t.id }}', this.value)">
+                                            <option value="todo">To Do</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="in_review" selected>In Review</option>
+                                            <option value="completed">Done</option>
+                                            <option value="blocked">Blocked</option>
+                                        </select>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px;" onclick="openEditModal('{{ t.id }}', '{{ t.title|escapejs }}', '{{ t.description|escapejs }}', '{{ t.department_id }}', '{{ t.assigned_to_id }}', '{{ t.priority }}', '{{ t.status }}', '{{ t.due_date }}', '{{ t.logged_hours }}')">Edit</button>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px; color: #DC2626;" onclick="deleteTask('{{ t.id }}')">&times;</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- LANE 4: DONE / COMPLETED -->
+                        <div class="kanban-lane" id="lane-completed">
+                            <div class="lane-header">
+                                <div class="lane-title-group">
+                                    <span class="status-indicator-dot dot-completed"></span>
+                                    <span class="lane-title">Done</span>
+                                    <span class="lane-count-pill" id="badge-completed">0</span>
+                                </div>
+                                <button class="lane-add-btn" title="Add task to Done" onclick="openCreateTaskModalWithStatus('completed')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+                            <div class="lane-cards" id="list-completed">
+                                {% for t in tasks %}
+                                {% if t.status == 'completed' %}
+                                <div class="task-card-modern" data-id="{{ t.id }}" data-project="{{ t.project_id }}" data-dept="{{ t.department_id }}" data-prio="{{ t.priority }}" data-assignee="{{ t.assigned_to_id }}">
+                                    <div class="card-top-row">
+                                        <span class="project-tag">{{ t.project_name }}</span>
+                                        <span class="priority-badge-soft prio-{{ t.priority }}">{{ t.priority|title }}</span>
+                                    </div>
+                                    <div class="card-task-title" style="text-decoration: line-through; color: #64748B;">{{ t.title }}</div>
+                                    <div class="card-meta-bar">
+                                        <span style="font-size: 11px; background: #ECFDF5; color: #047857; padding: 2px 6px; border-radius: 4px;">Completed</span>
+                                        <span>{{ t.logged_hours }} hrs logged</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11.5px;">
+                                        <div class="assignee-badge-small">
+                                            <div class="assignee-circle" style="background: #10B981;">{{ t.assigned_to_name|slice:":2"|upper }}</div>
+                                            <span>{{ t.assigned_to_name }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-action-bar">
+                                        <select class="status-select-subtle" onchange="quickUpdateStatus('{{ t.id }}', this.value)">
+                                            <option value="todo">To Do</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="in_review">In Review</option>
+                                            <option value="completed" selected>Done</option>
+                                            <option value="blocked">Blocked</option>
+                                        </select>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px; color: #DC2626;" onclick="deleteTask('{{ t.id }}')">&times;</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- LANE 5: BLOCKED -->
+                        <div class="kanban-lane" id="lane-blocked">
+                            <div class="lane-header">
+                                <div class="lane-title-group">
+                                    <span class="status-indicator-dot dot-blocked"></span>
+                                    <span class="lane-title">Blocked</span>
+                                    <span class="lane-count-pill" id="badge-blocked">0</span>
+                                </div>
+                                <button class="lane-add-btn" title="Add task to Blocked" onclick="openCreateTaskModalWithStatus('blocked')">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                </button>
+                            </div>
+                            <div class="lane-cards" id="list-blocked">
+                                {% for t in tasks %}
+                                {% if t.status == 'blocked' %}
+                                <div class="task-card-modern" data-id="{{ t.id }}" data-project="{{ t.project_id }}" data-dept="{{ t.department_id }}" data-prio="{{ t.priority }}" data-assignee="{{ t.assigned_to_id }}">
+                                    <div class="card-top-row">
+                                        <span class="project-tag">{{ t.project_name }}</span>
+                                        <span class="priority-badge-soft prio-{{ t.priority }}">{{ t.priority|title }}</span>
+                                    </div>
+                                    <div class="card-task-title" style="color: #DC2626;">{{ t.title }}</div>
+                                    {% if t.description %}
+                                    <div class="card-task-desc">{{ t.description }}</div>
+                                    {% endif %}
+                                    <div class="card-meta-bar">
+                                        <span style="font-size: 11px; background: #FEE2E2; color: #991B1B; padding: 2px 6px; border-radius: 4px;">Blocked</span>
+                                        <span>{% if t.due_date %}Due {{ t.due_date }}{% else %}No date{% endif %}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11.5px;">
+                                        <div class="assignee-badge-small">
+                                            <div class="assignee-circle" style="background: #EF4444;">{{ t.assigned_to_name|slice:":2"|upper }}</div>
+                                            <span>{{ t.assigned_to_name }}</span>
+                                        </div>
+                                        <span style="color: #64748B; font-size: 11px;">{{ t.logged_hours }}h / {{ t.estimated_hours }}h</span>
+                                    </div>
+                                    <div class="card-action-bar">
+                                        <select class="status-select-subtle" onchange="quickUpdateStatus('{{ t.id }}', this.value)">
+                                            <option value="todo">To Do</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="in_review">In Review</option>
+                                            <option value="completed">Done</option>
+                                            <option value="blocked" selected>Blocked</option>
+                                        </select>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px;" onclick="openEditModal('{{ t.id }}', '{{ t.title|escapejs }}', '{{ t.description|escapejs }}', '{{ t.department_id }}', '{{ t.assigned_to_id }}', '{{ t.priority }}', '{{ t.status }}', '{{ t.due_date }}', '{{ t.logged_hours }}')">Edit</button>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px; color: #DC2626;" onclick="deleteTask('{{ t.id }}')">&times;</button>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Table View -->
+                <div id="tab-table" class="tab-content">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Task Deliverable</th>
+                                    <th>Project</th>
+                                    <th>Department</th>
+                                    <th>Assignee</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Logged / Est</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableRows">
+                                {% for t in tasks %}
+                                <tr class="task-row-item" data-project="{{ t.project_id }}" data-dept="{{ t.department_id }}" data-prio="{{ t.priority }}" data-assignee="{{ t.assigned_to_id }}">
+                                    <td>
+                                        <strong style="color: var(--text-primary); font-size: 13px;">{{ t.title }}</strong>
+                                        {% if t.tags %}<div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;"><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#tag"></use></svg> {{ t.tags }}</div>{% endif %}
+                                    </td>
+                                    <td><span class="project-tag">{{ t.project_name }}</span></td>
+                                    <td><span style="font-size: 11.5px; background: #F1F5F9; padding: 2px 6px; border-radius: 4px;">{{ t.department_name }}</span></td>
+                                    <td>
+                                        <div class="assignee-badge-small">
+                                            <div class="assignee-circle" style="width: 18px; height: 18px; font-size: 9px;">{{ t.assigned_to_name|slice:":2"|upper }}</div>
+                                            <span>{{ t.assigned_to_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td><span class="priority-badge-soft prio-{{ t.priority }}">{{ t.priority|title }}</span></td>
+                                    <td>
+                                        <select onchange="quickUpdateStatus('{{ t.id }}', this.value)" style="padding: 3px 6px; font-size: 11.5px; border: 1px solid var(--border-color); border-radius: 4px; background: #FFFFFF;">
+                                            <option value="todo" {% if t.status == 'todo' %}selected{% endif %}>To Do</option>
+                                            <option value="in_progress" {% if t.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                            <option value="in_review" {% if t.status == 'in_review' %}selected{% endif %}>In Review</option>
+                                            <option value="completed" {% if t.status == 'completed' %}selected{% endif %}>Done</option>
+                                            <option value="blocked" {% if t.status == 'blocked' %}selected{% endif %}>Blocked</option>
+                                        </select>
+                                    </td>
+                                    <td style="font-size: 12px;">{{ t.due_date|default:"—" }}</td>
+                                    <td style="font-size: 12px; color: #64748B;">{{ t.logged_hours }}h / {{ t.estimated_hours }}h</td>
+                                    <td>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px;" onclick="openEditModal('{{ t.id }}', '{{ t.title|escapejs }}', '{{ t.description|escapejs }}', '{{ t.department_id }}', '{{ t.assigned_to_id }}', '{{ t.priority }}', '{{ t.status }}', '{{ t.due_date }}', '{{ t.logged_hours }}')">Edit</button>
+                                        <button class="btn btn-ghost btn-sm" style="padding: 3px 6px; color: var(--danger-red);" onclick="deleteTask('{{ t.id }}')">&times;</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" style="text-align: center; padding: 28px; color: var(--text-muted);">No project tasks created yet. Click "+ Assign Task" to create one.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Department Portfolios -->
+                <div id="tab-portfolios" class="tab-content" style="padding: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                        {% for p in projects %}
+                        <div class="project-portfolio-card">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <div>
+                                    <strong style="font-size: 14.5px; color: var(--text-primary);">{{ p.name }}</strong>
+                                    <div style="margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap;">
+                                        {% for d in p.departments %}
+                                        <span style="font-size: 11px; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; color: #475569;">{{ d }}</span>
+                                        {% empty %}
+                                        <span style="font-size: 11px; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; color: #475569;">General Operations</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <span style="font-size: 13px; font-weight: 700; color: var(--primary-accent);">{{ p.progress }}%</span>
+                            </div>
+                            <p style="font-size: 12px; color: var(--text-secondary); margin: 6px 0 10px 0; line-height: 1.4;">{{ p.description }}</p>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: {{ p.progress }}%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+                                <span>{{ p.completed_tasks }} of {{ p.total_tasks }} tasks completed</span>
+                                <span><svg class="ui-icon"><use href="/static/myapp/images/ui-icons.svg#users"></use></svg> {{ p.members_count }} team members</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--text-muted);">
+                            No projects defined yet. Go to <a href="/projects-page/" style="color: var(--primary-accent); font-weight: 600;">Departments & Projects</a> to launch one.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Assign New Task -->
+    <div id="createTaskModal" class="modal-overlay" style="display: none;">
+        <div class="modal" style="max-width: 520px;">
+            <div class="modal-header">
+                <span class="modal-title">Assign Project Task</span>
+                <button class="modal-close" onclick="closeCreateTaskModal()">&times;</button>
+            </div>
+            <form id="createTaskForm" onsubmit="handleCreateTask(event)">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label">Project *</label>
+                        <select id="task_proj" class="form-control" required style="width: 100%;">
+                            <option value="">-- Select Project --</option>
+                            {% for p in raw_projects %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label">Task Deliverable Title *</label>
+                        <input type="text" id="task_title" class="form-control" placeholder="e.g. Implement OAuth Single Sign-on integration" required style="width: 100%;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <select id="task_dept" class="form-control" style="width: 100%;">
+                                <option value="">-- Project Wide --</option>
+                                {% for d in departments %}
+                                <option value="{{ d.id }}">{{ d.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Appointed Staff</label>
+                            <select id="task_emp" class="form-control" style="width: 100%;">
+                                <option value="">-- Unassigned --</option>
+                                {% for e in employees %}
+                                <option value="{{ e.id }}">{{ e.name }} ({{ e.role }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select id="task_prio" class="form-control" style="width: 100%;">
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Initial Status</label>
+                            <select id="task_stat" class="form-control" style="width: 100%;">
+                                <option value="todo">To Do</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="in_review">In Review</option>
+                                <option value="completed">Done</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Due Date</label>
+                            <input type="date" id="task_due" class="form-control" style="width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Estimated Hours</label>
+                            <input type="number" step="0.5" id="task_est" class="form-control" placeholder="8.0" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label">Tags / Facilities</label>
+                        <input type="text" id="task_tags" class="form-control" placeholder="e.g. Backend, Security, Performance" style="width: 100%;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description & Deliverables</label>
+                        <textarea id="task_desc" rows="2" class="form-control" placeholder="Technical context and requirements..." style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeCreateTaskModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitTask">Assign Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Task -->
+    <div id="editTaskModal" class="modal-overlay" style="display: none;">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <span class="modal-title">Edit Task Details</span>
+                <button class="modal-close" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editTaskForm" onsubmit="handleEditTask(event)">
+                <input type="hidden" id="edit_id">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="edit_title" class="form-control" required style="width: 100%;">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Assignee</label>
+                            <select id="edit_assignee" class="form-control" style="width: 100%;">
+                                <option value="">-- Unassigned --</option>
+                                {% for e in employees %}
+                                <option value="{{ e.id }}">{{ e.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Status</label>
+                            <select id="edit_status" class="form-control" style="width: 100%;">
+                                <option value="todo">To Do</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="in_review">In Review</option>
+                                <option value="completed">Done</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                        <div class="form-group">
+                            <label class="form-label">Priority</label>
+                            <select id="edit_priority" class="form-control" style="width: 100%;">
+                                <option value="urgent">Urgent</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Logged Hours</label>
+                            <input type="number" step="0.5" id="edit_logged" class="form-control" style="width: 100%;">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" id="edit_due" class="form-control" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">Description</label>
+                        <textarea id="edit_desc" rows="2" class="form-control" style="width: 100%;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btnUpdateTask">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function updateCounters() {
+            ['todo', 'in_progress', 'in_review', 'completed', 'blocked'].forEach(st => {
+                const list = document.getElementById(`list-${st}`);
+                const count = list ? list.querySelectorAll('.task-card-modern:not([style*="display: none"])').length : 0;
+                const badge = document.getElementById(`badge-${st}`);
+                if (badge) badge.textContent = count;
+
+                // Handle empty state placeholder
+                const placeholder = list ? list.querySelector('.empty-lane-placeholder') : null;
+                if (count === 0) {
+                    if (!placeholder && list) {
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'empty-lane-placeholder';
+                        emptyDiv.innerHTML = `<p>No tasks</p><button type="button" onclick="openCreateTaskModalWithStatus('${st}')" class="btn-quick-add">+ Add task</button>`;
+                        list.appendChild(emptyDiv);
+                    }
+                } else {
+                    if (placeholder) placeholder.remove();
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', updateCounters);
+
+        function switchTaskTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            const targetContent = document.getElementById(`tab-${tabName}`);
+            if (targetContent) targetContent.classList.add('active');
+
+            const tabBtns = document.querySelectorAll('.tab');
+            if (tabName === 'kanban' && tabBtns[0]) tabBtns[0].classList.add('active');
+            if (tabName === 'table' && tabBtns[1]) tabBtns[1].classList.add('active');
+            if (tabName === 'portfolios' && tabBtns[2]) tabBtns[2].classList.add('active');
+        }
+
+        function applyFilters() {
+            const proj = document.getElementById('filter_project').value;
+            const dept = document.getElementById('filter_dept').value;
+            const prio = document.getElementById('filter_priority').value;
+            const ass = document.getElementById('filter_assignee').value;
+
+            // Filter Kanban Cards
+            document.querySelectorAll('.task-card-modern').forEach(card => {
+                const mProj = !proj || card.dataset.project === proj;
+                const mDept = !dept || card.dataset.dept === dept;
+                const mPrio = !prio || card.dataset.prio === prio;
+                const mAss = !ass || card.dataset.assignee === ass;
+
+                card.style.display = (mProj && mDept && mPrio && mAss) ? 'block' : 'none';
+            });
+
+            // Filter Table Rows
+            document.querySelectorAll('.task-row-item').forEach(row => {
+                const mProj = !proj || row.dataset.project === proj;
+                const mDept = !dept || row.dataset.dept === dept;
+                const mPrio = !prio || row.dataset.prio === prio;
+                const mAss = !ass || row.dataset.assignee === ass;
+
+                row.style.display = (mProj && mDept && mPrio && mAss) ? '' : 'none';
+            });
+
+            updateCounters();
+        }
+
+        function openCreateTaskModal() {
+            document.getElementById('createTaskModal').style.display = 'flex';
+        }
+        function openCreateTaskModalWithStatus(status) {
+            const statSelect = document.getElementById('task_stat');
+            if (statSelect) statSelect.value = status;
+            document.getElementById('createTaskModal').style.display = 'flex';
+        }
+        function closeCreateTaskModal() {
+            document.getElementById('createTaskModal').style.display = 'none';
+        }
+
+        function openEditModal(id, title, desc, deptId, assId, prio, stat, due, logged) {
+            document.getElementById('edit_id').value = id;
+            document.getElementById('edit_title').value = title;
+            document.getElementById('edit_desc').value = desc || '';
+            document.getElementById('edit_assignee').value = assId || '';
+            document.getElementById('edit_priority').value = prio || 'medium';
+            document.getElementById('edit_status').value = stat || 'todo';
+            document.getElementById('edit_due').value = due || '';
+            document.getElementById('edit_logged').value = logged || '0.0';
+            document.getElementById('editTaskModal').style.display = 'flex';
+        }
+        function closeEditModal() {
+            document.getElementById('editTaskModal').style.display = 'none';
+        }
+
+        async function handleCreateTask(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitTask');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            const payload = {
+                project_id: document.getElementById('task_proj').value,
+                title: document.getElementById('task_title').value,
+                description: document.getElementById('task_desc').value,
+                department_id: document.getElementById('task_dept').value || null,
+                assigned_to_id: document.getElementById('task_emp').value || null,
+                priority: document.getElementById('task_prio').value,
+                status: document.getElementById('task_stat').value,
+                due_date: document.getElementById('task_due').value || null,
+                estimated_hours: document.getElementById('task_est').value || 0,
+                tags: document.getElementById('task_tags').value
+            };
+
+            try {
+                const res = await fetch('/api/project-management/create-task/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to assign task');
+                }
+            } catch (err) {
+                alert('Connection error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Assign Task';
+            }
+        }
+
+        async function handleEditTask(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnUpdateTask');
+            btn.disabled = true;
+
+            const payload = {
+                task_id: document.getElementById('edit_id').value,
+                title: document.getElementById('edit_title').value,
+                description: document.getElementById('edit_desc').value,
+                assigned_to_id: document.getElementById('edit_assignee').value || null,
+                priority: document.getElementById('edit_priority').value,
+                status: document.getElementById('edit_status').value,
+                due_date: document.getElementById('edit_due').value || null,
+                logged_hours: document.getElementById('edit_logged').value || 0
+            };
+
+            try {
+                const res = await fetch('/api/project-management/update-task/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to update');
+                }
+            } catch (err) {
+                alert('Connection error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function quickUpdateStatus(taskId, newStatus) {
+            try {
+                const res = await fetch('/api/project-management/update-task/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_id: taskId, status: newStatus })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to update status');
+                }
+            } catch (err) {
+                alert('Network error');
+            }
+        }
+
+        async function deleteTask(taskId) {
+            if (!confirm('Are you sure you want to delete this task?')) return;
+            try {
+                const res = await fetch('/api/project-management/delete-task/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task_id: taskId })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to delete');
+                }
+            } catch (err) {
+                alert('Network error');
+            }
+        }
+    </script>
+</body>
+</html>
