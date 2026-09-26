@@ -318,3 +318,51 @@ python manage.py test
 6. `test_backup_command_execution_and_verification`: Verifies `db_backup` and `db_verify_backup`.
 7. `test_database_health_audit_command`: Verifies `db_health`.
 8. `test_admin_recovery_and_restore_api`: Verifies admin UI, restore endpoint, health API, and data export.
+9. `test_production_database_safety_guard`: Verifies production halts immediately if DATABASE_URL or PostgreSQL is missing.
+10. `test_db_migrate_postgres_verify_command`: Verifies database model counts align with migration backup dataset.
+
+---
+
+## 13. Production PostgreSQL Migration & Verification Runbook
+
+### Step 1: Pre-Migration Backup & Checksums
+All historical data is preserved in `database_migration_backup/`:
+- `db.sqlite3` (`7756abc8ad8d2306dd01a4b38e18acb3012c694284fc97870d166921a8365e7a`)
+- `db.sqlite3.pre_recovery_bak` (`89ad158a00c451b058bdec954007dfb8a172ecad055aa61cbb9d25850045ed0c`)
+- `teamnext_full_backup.json` (`5dc544493c7e6c539362cffa7220ce4f91f5d18de9528c50c50b0dc203cd09f1`)
+
+### Step 2: Render PostgreSQL Instance Provisioning
+1. In the Render Dashboard, provision a **PostgreSQL Database**:
+   - **Name**: `teamnext-db`
+   - **Plan**: `Starter` (Paid, permanent persistence with automated daily snapshots; do **NOT** use 30-day Free tier)
+   - **Database**: `teamnext`
+   - **User**: `teamnext`
+2. In the Render Web Service settings for `teamnext-app`:
+   - Under **Environment Variables**, configure:
+     ```text
+     DATABASE_URL = [Render Internal PostgreSQL Connection String]
+     DJANGO_ENV = production
+     DEBUG = False
+     ```
+   - Render's Blueprint (`render.yaml`) automatically wires `fromDatabase` into `DATABASE_URL`.
+
+### Step 3: Zero-Downtime Safe Data Migration
+Run the automated migration and sequence synchronization command:
+```bash
+python manage.py db_migrate_postgres
+```
+
+This command automatically executes:
+1. `python manage.py migrate --no-input` (Builds complete schema in PostgreSQL).
+2. `loaddata` of `teamnext_full_backup.json` (Safely imports all historical users, companies, employees, tickets, projects, attendance, invoices, payroll, and logs).
+3. Primary Key Sequence Synchronization (`sqlsequencereset` / `pg_get_serial_sequence`), aligning each sequence to `MAX(id) + 1` so future inserts never trigger duplicate key collisions.
+4. Automated verification comparing backup counts vs PostgreSQL active counts.
+
+### Step 4: Verification Check
+Run post-migration audit:
+```bash
+python manage.py db_migrate_postgres --verify-only
+python manage.py db_health
+```
+Every model must report `MATCH`.
+

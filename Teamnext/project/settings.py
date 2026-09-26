@@ -77,18 +77,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
+import sys
+from django.core.exceptions import ImproperlyConfigured
+
 # ============================================================
 # Environment Profile & Operational Mode
 # ============================================================
 DJANGO_ENV = os.environ.get('DJANGO_ENV', 'production' if not DEBUG else 'development').lower()
+is_testing = 'test' in sys.argv
 
 # ============================================================
 # Database Configuration & Persistence Layer
 # ============================================================
-# 1. Primary strategy: Check DATABASE_URL (12-Factor App standard)
+# 1. Primary strategy: Check DATABASE_URL (12-Factor App standard on Render)
 # 2. Secondary strategy: Check individual DB_* environment variables
-# 3. Development fallback: Local SQLite store
+# 3. Development fallback: Local SQLite store (Strictly forbidden in Production)
 db_conn_max_age = int(os.environ.get('DB_CONN_MAX_AGE', 600))
+allow_sqlite_override = os.environ.get('ALLOW_SQLITE_IN_PRODUCTION', 'False').lower() in ('true', '1')
 
 if os.environ.get('DATABASE_URL'):
     DATABASES = {
@@ -114,6 +119,20 @@ elif os.environ.get('DB_NAME') and (os.environ.get('DB_HOST') or os.environ.get(
         }
     }
 else:
+    # Fail immediately if production without persistent PostgreSQL
+    if (DJANGO_ENV == 'production' or not DEBUG) and not is_testing and not allow_sqlite_override:
+        raise ImproperlyConfigured(
+            "\n" + "=" * 78 + "\n"
+            "CRITICAL PERSISTENCE FAILURE: TeamNext ERP is running in PRODUCTION without DATABASE_URL!\n"
+            "Silent fallback to SQLite in production is strictly disabled to prevent data loss.\n"
+            "Render web service filesystems are ephemeral: any restart or redeploy would erase your data.\n\n"
+            "ACTION REQUIRED:\n"
+            "1. Attach a persistent PostgreSQL database on Render (starter plan or higher).\n"
+            "2. Set the DATABASE_URL environment variable in your Render dashboard.\n"
+            "3. If testing locally in development mode, set DEBUG=True and DJANGO_ENV=development in .env.\n"
+            + "=" * 78
+        )
+
     sqlite_path = os.environ.get('SQLITE_PATH')
     sqlite_file = Path(sqlite_path) if sqlite_path else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
@@ -132,19 +151,12 @@ DATABASES['default']['TEST'] = {
 
 # Critical Production Persistence Safety Guard
 active_engine = DATABASES['default'].get('ENGINE', '')
-if not DEBUG and 'sqlite' in active_engine:
-    allow_sqlite = os.environ.get('ALLOW_SQLITE_IN_PRODUCTION', 'False').lower() in ('true', '1')
-    if not allow_sqlite:
-        import warnings
-        msg = (
-            "CRITICAL PERSISTENCE WARNING: TeamNext ERP is running with an ephemeral SQLite database in production! "
-            "Server restarts or container redeployments will DESTROY all application data. "
-            "Configure a persistent PostgreSQL service using DATABASE_URL or DB_HOST/DB_NAME/DB_USER/DB_PASSWORD, "
-            "or explicitly set ALLOW_SQLITE_IN_PRODUCTION=True if SQLite is mounted on a persistent Docker volume."
+if (DJANGO_ENV == 'production' or not DEBUG) and not is_testing and not allow_sqlite_override:
+    if 'sqlite' in active_engine:
+        raise ImproperlyConfigured(
+            f"CRITICAL CONFIGURATION ERROR: Production database engine must be PostgreSQL (e.g. django.db.backends.postgresql), "
+            f"but '{active_engine}' was configured. Ephemeral SQLite is strictly prohibited in production."
         )
-        warnings.warn(msg, RuntimeWarning)
-        import sys
-        print(f"\n{'!' * 70}\n{msg}\n{'!' * 70}\n", file=sys.stderr)
 
 # ============================================================
 # Database Backup, Retention & Disaster Recovery Configuration
