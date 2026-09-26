@@ -147,4 +147,13 @@ urlpatterns = [
     path("go/<str:target>/", views.quick_redirect, name="go_target"),
 
     path("reset-db/", views.reset_db_view, name="reset_db"),
+
+    # Database Persistence, Backup & Disaster Recovery Administration
+    path("admin-recovery/", views.admin_recovery_page, name="admin_recovery_page"),
+    path("api/health/db/", views.api_db_health, name="api_db_health"),
+    path("api/admin/backup/create/", views.api_admin_trigger_backup, name="api_admin_trigger_backup"),
+    path("api/admin/backup/verify/", views.api_admin_verify_backups, name="api_admin_verify_backups"),
+    path("api/admin/recovery/restore/", views.api_admin_restore_soft_deleted, name="api_admin_restore_soft_deleted"),
+    path("api/admin/export/", views.api_admin_export_data, name="api_admin_export_data"),
 ]
+

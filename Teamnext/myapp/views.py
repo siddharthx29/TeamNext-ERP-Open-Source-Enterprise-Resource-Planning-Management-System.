@@ -1,5 +1,6 @@
 import os
 import re
+import json
 import random
 import mimetypes
 import secrets
@@ -13,7 +14,7 @@ from django.conf import settings
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Sum, Count, Avg, F, Q
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password, identify_hasher
@@ -23,8 +24,18 @@ from .models import (
     Company, Employee, Project, ProjectMember, Ticket, ChatMessage,
     ChatMessageMedia, EmailMessage, LeaveRequest, SocialItem, Department,
     Invoice, Expense, Payroll, VendorPayment, BankTransaction,
-    InventoryItem, Attendance, Notification, Feedback, ProjectTask
+    InventoryItem, Attendance, Notification, Feedback, ProjectTask,
+    AuditLog, DatabaseBackupRecord, log_audit
 )
+
+
+def get_client_ip(request):
+    """Extract client IP address for security audit trails."""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0].strip()
+    return request.META.get('REMOTE_ADDR', '')
+
 
 
 def generate_secure_otp():
@@ -617,36 +628,56 @@ def signup_view(request):
             if website and not (website.startswith('http://') or website.startswith('https://')):
                 website = f"https://{website}"
 
-            co = Company.objects.create(
-                name=company_name,
-                email=email,
-                password=make_password(password),
-                address=request.POST.get('address'),
-                phone=request.POST.get('phone'),
-                website=website or None,
-                employees_count=request.POST.get('employees_count') or request.POST.get('company_size'),
-                industry=request.POST.get('industry')
-            )
+            with transaction.atomic():
+                co = Company.objects.create(
+                    name=company_name,
+                    email=email,
+                    password=make_password(password),
+                    address=request.POST.get('address'),
+                    phone=request.POST.get('phone'),
+                    website=website or None,
+                    employees_count=request.POST.get('employees_count') or request.POST.get('company_size'),
+                    industry=request.POST.get('industry')
+                )
 
-            # Automatically create admin Employee account for unified access
-            admin_emp, _ = Employee.objects.get_or_create(
-                email=co.email,
-                defaults={
-                    'company': co,
-                    'name': request.POST.get('contact_person') or co.name,
-                    'password': co.password,
-                    'role': request.POST.get('contact_title') or 'Administrator',
-                    'phone': co.phone
-                }
-            )
+                # Automatically create admin Employee account for unified access
+                admin_emp, _ = Employee.objects.get_or_create(
+                    email=co.email,
+                    defaults={
+                        'company': co,
+                        'name': request.POST.get('contact_person') or co.name,
+                        'password': co.password,
+                        'role': request.POST.get('contact_title') or 'Administrator',
+                        'phone': co.phone
+                    }
+                )
 
-            create_notification_for_users(
-                [admin_emp],
-                'system',
-                'Account Created',
-                f'Welcome to TeamNext! Your workspace "{co.name}" has been created successfully.',
-                link='/dashboard/'
-            )
+                # Default Department
+                Department.objects.get_or_create(
+                    company=co,
+                    name='General Management',
+                    defaults={'description': 'Corporate Administration & Operations'}
+                )
+
+                create_notification_for_users(
+                    [admin_emp],
+                    'system',
+                    'Account Created',
+                    f'Welcome to TeamNext! Your workspace "{co.name}" has been created successfully.',
+                    link='/dashboard/'
+                )
+
+                log_audit(
+                    company=co,
+                    actor_email=email,
+                    actor_name=co.name,
+                    action='CREATE',
+                    entity_type='Company',
+                    entity_id=co.id,
+                    entity_name=co.name,
+                    description=f"Company workspace '{co.name}' registered with admin {admin_emp.name}",
+                    ip_address=get_client_ip(request)
+                )
 
             request.session['verified'] = True
             request.session['company_name'] = co.name
@@ -1312,7 +1343,18 @@ def api_delete_social_item(request):
         if not item:
             return JsonResponse({"status": "error", "message": "Social item not found"}, status=404)
 
-        item.delete()
+        item.delete(deleted_by=email)
+        log_audit(
+            company=co,
+            actor_email=email,
+            actor_name=emp.name if emp else co.name,
+            action='DELETE',
+            entity_type='SocialItem',
+            entity_id=item.id,
+            entity_name=item.title,
+            description=f"Social item '{item.title}' soft-deleted",
+            ip_address=get_client_ip(request)
+        )
         return JsonResponse({"status": "ok", "message": "Item deleted successfully"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -2560,7 +2602,18 @@ def api_users(request):
             if not target_emp:
                 return JsonResponse({'status': 'error', 'message': 'Member not found'}, status=404)
 
-            target_emp.delete()
+            target_emp.delete(deleted_by=email)
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='DELETE',
+                entity_type='Employee',
+                entity_id=target_emp.id,
+                entity_name=target_emp.name,
+                description=f"Employee '{target_emp.name}' ({target_emp.email}) soft-deleted",
+                ip_address=get_client_ip(request)
+            )
             return JsonResponse({'status': 'ok', 'message': 'Member removed successfully'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -3267,12 +3320,25 @@ def api_create_invoice(request):
         amount = float(data.get('amount') or 0)
         gst_rate = float(data.get('gst_rate', 18.0) or 18.0)
         
-        invoice = Invoice.objects.create(
-            company=co,
-            client_name=client_name,
-            amount=amount,
-            gst_rate=gst_rate
-        )
+        with transaction.atomic():
+            invoice = Invoice.objects.create(
+                company=co,
+                client_name=client_name,
+                amount=amount,
+                gst_rate=gst_rate
+            )
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='CREATE',
+                entity_type='Invoice',
+                entity_id=invoice.id,
+                entity_name=f"Invoice #{invoice.id} - {invoice.client_name}",
+                description=f"Created invoice for {invoice.client_name}, amount: ${invoice.total_amount}",
+                ip_address=get_client_ip(request)
+            )
+
         return JsonResponse({
             'status': 'ok', 
             'message': f'Invoice created for {invoice.client_name}. Total with GST: ${invoice.total_amount}',
@@ -3294,12 +3360,25 @@ def api_log_expense(request):
         category = data.get('category', 'Operations') or 'Operations'
         amount = float(data.get('amount') or 0)
 
-        expense = Expense.objects.create(
-            company=co,
-            description=description,
-            category=category,
-            amount=amount
-        )
+        with transaction.atomic():
+            expense = Expense.objects.create(
+                company=co,
+                description=description,
+                category=category,
+                amount=amount
+            )
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='CREATE',
+                entity_type='Expense',
+                entity_id=expense.id,
+                entity_name=expense.description,
+                description=f"Expense logged: {expense.description} (${expense.amount})",
+                ip_address=get_client_ip(request)
+            )
+
         return JsonResponse({'status': 'ok', 'message': 'Expense logged successfully'})
     return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
 
@@ -3331,14 +3410,27 @@ def api_add_salary(request):
         deductions = float(data.get('deductions') or 0)
         month_year = data.get('month_year') or time.strftime('%B %Y')
 
-        Payroll.objects.create(
-            company=co,
-            employee=target_emp,
-            base_salary=amount,
-            bonus=bonus,
-            deductions=deductions,
-            month_year=month_year
-        )
+        with transaction.atomic():
+            payroll = Payroll.objects.create(
+                company=co,
+                employee=target_emp,
+                base_salary=amount,
+                bonus=bonus,
+                deductions=deductions,
+                month_year=month_year
+            )
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='CREATE',
+                entity_type='Payroll',
+                entity_id=payroll.id,
+                entity_name=f"Payroll {payroll.month_year} - {target_emp.name}",
+                description=f"Payroll issued to {target_emp.name}, net salary: ${payroll.net_salary}",
+                ip_address=get_client_ip(request)
+            )
+
         return JsonResponse({'status': 'ok', 'message': 'Salary payout recorded successfully'})
     return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
 
@@ -3495,7 +3587,22 @@ def api_delete_asset(request):
             if not co:
                 return JsonResponse({'status': 'error', 'message': 'Company not found'}, status=404)
             item_id = data.get('id')
-            InventoryItem.objects.filter(company=co, id=item_id).delete()
+            item = InventoryItem.objects.filter(company=co, id=item_id).first()
+            if not item:
+                return JsonResponse({'status': 'error', 'message': 'Asset not found'}, status=404)
+
+            item.delete(deleted_by=email)
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='DELETE',
+                entity_type='InventoryItem',
+                entity_id=item.id,
+                entity_name=f"{item.name} ({item.sku})",
+                description=f"Inventory asset '{item.name}' soft-deleted",
+                ip_address=get_client_ip(request)
+            )
             return JsonResponse({'status': 'ok', 'message': 'Asset deleted successfully'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -4355,14 +4462,17 @@ def api_hr_appoint_project(request):
         if not target_emp or not target_proj:
             return JsonResponse({'status': 'error', 'message': 'Employee or Project not found in workspace'}, status=404)
 
-        membership, created = ProjectMember.objects.update_or_create(
+        membership, created = ProjectMember.all_objects.update_or_create(
             project=target_proj,
             employee=target_emp,
             defaults={
                 'is_admin': is_admin,
                 'can_chat': can_chat,
                 'can_approve_leaves': can_approve_leaves,
-                'is_allowed': True
+                'is_allowed': True,
+                'is_deleted': False,
+                'deleted_at': None,
+                'deleted_by': None
             }
         )
 
@@ -4396,11 +4506,25 @@ def api_hr_remove_project_member(request):
         membership_id = data.get('membership_id')
 
         if membership_id:
-            ProjectMember.objects.filter(id=int(membership_id), project__company=co).delete()
+            pms = ProjectMember.objects.filter(id=int(membership_id), project__company=co)
         elif emp_id and project_id:
-            ProjectMember.objects.filter(employee_id=int(emp_id), project_id=int(project_id), project__company=co).delete()
+            pms = ProjectMember.objects.filter(employee_id=int(emp_id), project_id=int(project_id), project__company=co)
         else:
             return JsonResponse({'status': 'error', 'message': 'Appointment identifier required'}, status=400)
+
+        for pm_obj in pms:
+            pm_obj.delete(deleted_by=email)
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='DELETE',
+                entity_type='ProjectMember',
+                entity_id=pm_obj.id,
+                entity_name=f"{pm_obj.employee.name} in #{pm_obj.project.name}",
+                description=f"Revoked project appointment for {pm_obj.employee.name} from {pm_obj.project.name}",
+                ip_address=get_client_ip(request)
+            )
 
         return JsonResponse({'status': 'ok', 'message': 'Employee appointment removed from project.'})
     except Exception as e:
@@ -4428,9 +4552,9 @@ def api_hr_add_employee(request):
         if not emp_email:
             return JsonResponse({'status': 'error', 'message': 'Email is required'}, status=400)
             
-        # Check if employee already exists
+        # Check if active employee already exists
         if Employee.objects.filter(email__iexact=emp_email).exists():
-            return JsonResponse({'status': 'error', 'message': 'Employee with this email already exists'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'Active employee with this email already exists'}, status=400)
         
         # Get department if provided
         department = None
@@ -4441,17 +4565,49 @@ def api_hr_add_employee(request):
             except Exception:
                 pass
         
-        # Create employee
         raw_pwd = data.get('password') or 'changeme123'
-        employee = Employee.objects.create(
-            company=co,
-            name=data.get('name') or (emp_email.split('@')[0] if emp_email else 'New Employee'),
-            email=emp_email,
-            password=make_password(raw_pwd),
-            role=data.get('role', 'Employee'),
-            dept=department,
-            phone=data.get('phone', '')
-        )
+        name = data.get('name') or (emp_email.split('@')[0] if emp_email else 'New Employee')
+        role = data.get('role', 'Employee')
+        phone = data.get('phone', '')
+
+        with transaction.atomic():
+            # Check if there was a previously soft-deleted employee with this email
+            soft_deleted_emp = Employee.all_objects.filter(email__iexact=emp_email, is_deleted=True).first()
+            if soft_deleted_emp:
+                soft_deleted_emp.restore()
+                soft_deleted_emp.company = co
+                soft_deleted_emp.name = name
+                soft_deleted_emp.role = role
+                soft_deleted_emp.dept = department
+                soft_deleted_emp.phone = phone
+                if raw_pwd:
+                    soft_deleted_emp.password = make_password(raw_pwd)
+                soft_deleted_emp.save()
+                employee = soft_deleted_emp
+                action_text = "Restored and updated previously deleted employee"
+            else:
+                employee = Employee.objects.create(
+                    company=co,
+                    name=name,
+                    email=emp_email,
+                    password=make_password(raw_pwd),
+                    role=role,
+                    dept=department,
+                    phone=phone
+                )
+                action_text = f"Employee {employee.name} added successfully"
+
+            log_audit(
+                company=co,
+                actor_email=email,
+                actor_name=emp.name if emp else co.name,
+                action='CREATE',
+                entity_type='Employee',
+                entity_id=employee.id,
+                entity_name=employee.name,
+                description=action_text,
+                ip_address=get_client_ip(request)
+            )
         
         return JsonResponse({
             'status': 'ok',
@@ -4903,7 +5059,18 @@ def api_delete_ticket(request):
         if not ticket:
             return JsonResponse({"status": "error", "message": "Ticket not found"}, status=404)
 
-        ticket.delete()
+        ticket.delete(deleted_by=email)
+        log_audit(
+            company=co,
+            actor_email=email,
+            actor_name=emp.name if emp else co.name,
+            action='DELETE',
+            entity_type='Ticket',
+            entity_id=ticket.id,
+            entity_name=f"Ticket #{ticket.id} - {ticket.title}",
+            description=f"Ticket #{ticket.id} '{ticket.title}' soft-deleted",
+            ip_address=get_client_ip(request)
+        )
         return JsonResponse({"status": "success", "message": "Ticket deleted successfully"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -5253,7 +5420,18 @@ def api_delete_feedback(request):
         if not feedback_obj:
             return JsonResponse({"status": "error", "message": "Feedback not found"}, status=404)
 
-        feedback_obj.delete()
+        feedback_obj.delete(deleted_by=email)
+        log_audit(
+            company=co,
+            actor_email=email,
+            actor_name=emp.name if emp else co.name,
+            action='DELETE',
+            entity_type='Feedback',
+            entity_id=feedback_obj.id,
+            entity_name=f"Feedback #{feedback_obj.id} - {feedback_obj.title}",
+            description=f"Feedback #{feedback_obj.id} '{feedback_obj.title}' soft-deleted",
+            ip_address=get_client_ip(request)
+        )
         return JsonResponse({"status": "ok", "message": "Feedback deleted successfully"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
@@ -5606,9 +5784,419 @@ def api_delete_project_task(request):
         if not task_obj:
             return JsonResponse({"status": "error", "message": "Task not found"}, status=404)
 
-        task_obj.delete()
+        task_obj.delete(deleted_by=email)
+        log_audit(
+            company=co,
+            actor_email=email,
+            actor_name=emp.name if emp else co.name,
+            action='DELETE',
+            entity_type='ProjectTask',
+            entity_id=task_obj.id,
+            entity_name=f"Task #{task_obj.id} - {task_obj.title}",
+            description=f"Task #{task_obj.id} '{task_obj.title}' soft-deleted",
+            ip_address=get_client_ip(request)
+        )
         return JsonResponse({"status": "ok", "message": "Task deleted successfully"})
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+# ==============================================================================
+# DISASTER RECOVERY, AUDITING & BACKUP ADMINISTRATION MODULE
+# ==============================================================================
+
+def check_admin_privileges(request):
+    """Verifies that the current session belongs to a workspace administrator or company owner."""
+    if not request.session.get('verified'):
+        return False, None, None
+    email = (request.session.get('otp_email') or '').strip().lower()
+    co, emp = get_user_company_and_employee(email)
+    if not co:
+        return False, None, None
+    is_owner = Company.objects.filter(email__iexact=email).exists()
+    is_admin = emp and getattr(emp, 'role', '').lower() in ['admin', 'administrator', 'superadmin']
+    return (is_owner or is_admin), co, emp
+
+
+def admin_recovery_page(request):
+    """Administrator-only console for backup health, disaster recovery, soft-delete restoration, and audit inspection."""
+    is_admin, co, emp = check_admin_privileges(request)
+    if not is_admin:
+        messages.error(request, "Access restricted. Administrator privileges required.")
+        return redirect("dashboard")
+
+    email = request.session.get('otp_email')
+    
+    # 1. Database & Connectivity Telemetry
+    db_conf = settings.DATABASES['default']
+    db_engine = db_conf.get('ENGINE', '')
+    engine_short = 'postgresql' if 'postgres' in db_engine else ('mysql' if 'mysql' in db_engine else 'sqlite3')
+
+    t_start = time.time()
+    try:
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1;")
+            cursor.fetchone()
+        latency_ms = round((time.time() - t_start) * 1000, 2)
+        conn_ok = True
+    except Exception:
+        latency_ms = -1
+        conn_ok = False
+
+    is_production = getattr(settings, 'DJANGO_ENV', 'development') == 'production' or not settings.DEBUG
+    allow_sqlite = getattr(settings, 'ALLOW_SQLITE_IN_PRODUCTION', False)
+    persistence_safe = not (is_production and engine_short == 'sqlite3' and not allow_sqlite)
+
+    # 2. Backups List
+    backups = DatabaseBackupRecord.objects.all().order_by('-created_at')[:25]
+    latest_backup = backups.first() if backups.exists() else None
+
+    # 3. Soft Deleted Records Across All Entities
+    soft_deleted_records = []
+    
+    for e in Employee.all_objects.filter(company=co, is_deleted=True):
+        soft_deleted_records.append({
+            'type': 'Employee',
+            'id': e.id,
+            'name': e.name,
+            'detail': f"{e.email} ({e.role})",
+            'deleted_at': e.deleted_at,
+            'deleted_by': e.deleted_by or 'Unknown'
+        })
+    for inv in Invoice.all_objects.filter(company=co, is_deleted=True):
+        soft_deleted_records.append({
+            'type': 'Invoice',
+            'id': inv.id,
+            'name': f"Invoice #{inv.id}",
+            'detail': f"Client: {inv.client_name}, Total: ${inv.total_amount}",
+            'deleted_at': inv.deleted_at,
+            'deleted_by': inv.deleted_by or 'Unknown'
+        })
+    for t in Ticket.all_objects.filter(project__company=co, is_deleted=True):
+        soft_deleted_records.append({
+            'type': 'Ticket',
+            'id': t.id,
+            'name': f"Ticket #{t.id}",
+            'detail': f"{t.title} ({t.priority})",
+            'deleted_at': t.deleted_at,
+            'deleted_by': t.deleted_by or 'Unknown'
+        })
+    for task in ProjectTask.all_objects.filter(project__company=co, is_deleted=True):
+        soft_deleted_records.append({
+            'type': 'ProjectTask',
+            'id': task.id,
+            'name': f"Task #{task.id}",
+            'detail': f"{task.title} ({task.status})",
+            'deleted_at': task.deleted_at,
+            'deleted_by': task.deleted_by or 'Unknown'
+        })
+    for item in InventoryItem.all_objects.filter(company=co, is_deleted=True):
+        soft_deleted_records.append({
+            'type': 'InventoryItem',
+            'id': item.id,
+            'name': item.name,
+            'detail': f"SKU: {item.sku}, Qty: {item.quantity}",
+            'deleted_at': item.deleted_at,
+            'deleted_by': item.deleted_by or 'Unknown'
+        })
+    for fb in Feedback.all_objects.filter(company=co, is_deleted=True):
+        soft_deleted_records.append({
+            'type': 'Feedback',
+            'id': fb.id,
+            'name': f"Feedback #{fb.id}",
+            'detail': fb.title,
+            'deleted_at': fb.deleted_at,
+            'deleted_by': fb.deleted_by or 'Unknown'
+        })
+
+    # Sort soft deleted by deletion time newest first
+    soft_deleted_records.sort(key=lambda r: r['deleted_at'] or timezone.now(), reverse=True)
+
+    # 4. Audit Trail
+    audit_logs = AuditLog.objects.filter(Q(company=co) | Q(company__isnull=True)).order_by('-created_at')[:40]
+
+    context = {
+        'company_name': co.name,
+        'email': email,
+        'co_info': co,
+        'engine': engine_short,
+        'db_host': db_conf.get('HOST', 'localhost'),
+        'db_name': str(db_conf.get('NAME', '')),
+        'conn_ok': conn_ok,
+        'latency_ms': latency_ms,
+        'is_production': is_production,
+        'persistence_safe': persistence_safe,
+        'backups': backups,
+        'latest_backup': latest_backup,
+        'soft_deleted_records': soft_deleted_records,
+        'soft_deleted_count': len(soft_deleted_records),
+        'audit_logs': audit_logs,
+        'backup_retention_days': getattr(settings, 'BACKUP_RETENTION_DAYS', 30),
+        'weekly_retention': getattr(settings, 'WEEKLY_BACKUP_RETENTION', 12),
+        'monthly_retention': getattr(settings, 'MONTHLY_BACKUP_RETENTION', 12),
+    }
+    return render(request, 'admin_recovery.html', context)
+
+
+@csrf_exempt
+def api_db_health(request):
+    """Monitoring probe endpoint returning JSON health statistics."""
+    from django.core.management import call_command
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    try:
+        call_command('db_health', format='json', stdout=buf)
+        data = json.loads(buf.getvalue())
+        return JsonResponse(data, status=200 if data.get('healthy') else 503)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'healthy': False, 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_admin_trigger_backup(request):
+    """Triggers an automated backup on-demand from the admin recovery interface."""
+    is_admin, co, emp = check_admin_privileges(request)
+    if not is_admin:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    try:
+        from django.core.management import call_command
+        data = parse_request_data(request)
+        backup_type = data.get('type') or 'manual'
+        email = request.session.get('otp_email')
+
+        call_command('db_backup', type=backup_type, actor=email)
+        latest_rec = DatabaseBackupRecord.objects.order_by('-created_at').first()
+
+        return JsonResponse({
+            'status': 'ok',
+            'message': f"Backup '{latest_rec.filename if latest_rec else 'archive'}' created and verified successfully.",
+            'backup': {
+                'filename': latest_rec.filename if latest_rec else '',
+                'size': latest_rec.size_bytes if latest_rec else 0,
+                'status': latest_rec.status if latest_rec else 'success'
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_admin_verify_backups(request):
+    """Runs a verification audit across all stored backup archives."""
+    is_admin, co, emp = check_admin_privileges(request)
+    if not is_admin:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    try:
+        from django.core.management import call_command
+        import io
+        buf = io.StringIO()
+        call_command('db_verify_backup', all=True, stdout=buf)
+        return JsonResponse({'status': 'ok', 'message': 'All backup archives verified intact.', 'output': buf.getvalue()})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_admin_restore_soft_deleted(request):
+    """Restores a soft-deleted ERP record back into active state."""
+    is_admin, co, emp = check_admin_privileges(request)
+    if not is_admin:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid method'}, status=405)
+
+    try:
+        data = parse_request_data(request)
+        entity_type = (data.get('type') or data.get('entity_type') or '').strip().lower()
+        entity_id = data.get('id') or data.get('entity_id')
+        email = request.session.get('otp_email')
+
+        model_map = {
+            'employee': Employee,
+            'invoice': Invoice,
+            'ticket': Ticket,
+            'projecttask': ProjectTask,
+            'inventoryitem': InventoryItem,
+            'feedback': Feedback,
+            'socialitem': SocialItem,
+            'projectmember': ProjectMember,
+        }
+
+        model_cls = model_map.get(entity_type)
+        if not model_cls:
+            return JsonResponse({'status': 'error', 'message': f'Unsupported entity type: {entity_type}'}, status=400)
+
+        record = model_cls.all_objects.filter(id=entity_id, is_deleted=True).first()
+        if not record:
+            return JsonResponse({'status': 'error', 'message': 'Soft-deleted record not found'}, status=404)
+
+        record.restore()
+
+        log_audit(
+            company=co,
+            actor_email=email,
+            actor_name=emp.name if emp else co.name,
+            action='RESTORE',
+            entity_type=model_cls.__name__,
+            entity_id=record.id,
+            entity_name=str(record),
+            description=f"Restored soft-deleted {model_cls.__name__} #{record.id}",
+            ip_address=get_client_ip(request)
+        )
+
+        return JsonResponse({'status': 'ok', 'message': f"Successfully restored {model_cls.__name__} #{record.id}"})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+def api_admin_export_data(request):
+    """Administrator-controlled data export in CSV ZIP, JSON, or SQL format."""
+    is_admin, co, emp = check_admin_privileges(request)
+    if not is_admin:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=403)
+
+    export_format = request.GET.get('format', 'csv').lower()
+    email = request.session.get('otp_email')
+    now_str = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+
+    log_audit(
+        company=co,
+        actor_email=email,
+        actor_name=emp.name if emp else co.name,
+        action='EXPORT',
+        entity_type='CompanyDataExport',
+        entity_id=str(co.id),
+        entity_name=co.name,
+        description=f"Exported ERP workspace data ({export_format.upper()})",
+        ip_address=get_client_ip(request)
+    )
+
+    if export_format == 'json':
+        from django.core import serializers
+        import json
+
+        data = {
+            'company': {
+                'id': co.id,
+                'name': co.name,
+                'email': co.email,
+                'industry': co.industry,
+                'created_at': co.created_at.isoformat()
+            },
+            'employees': list(Employee.objects.filter(company=co).values('id', 'name', 'email', 'role', 'phone', 'created_at')),
+            'invoices': list(Invoice.objects.filter(company=co).values('id', 'client_name', 'amount', 'gst_amount', 'total_amount', 'status', 'created_at')),
+            'expenses': list(Expense.objects.filter(company=co).values('id', 'description', 'category', 'amount', 'date')),
+            'payrolls': list(Payroll.objects.filter(company=co).values('id', 'employee__name', 'base_salary', 'bonus', 'deductions', 'net_salary', 'month_year')),
+            'inventory': list(InventoryItem.objects.filter(company=co).values('id', 'name', 'sku', 'category', 'quantity', 'price')),
+            'tickets': list(Ticket.objects.filter(project__company=co).values('id', 'title', 'priority', 'status', 'created_at')),
+            'tasks': list(ProjectTask.objects.filter(project__company=co).values('id', 'title', 'priority', 'status', 'due_date', 'estimated_hours', 'logged_hours')),
+            'feedbacks': list(Feedback.objects.filter(company=co).values('id', 'feedback_type', 'title', 'status', 'created_at')),
+            'audit_logs': list(AuditLog.objects.filter(company=co).values('id', 'actor_email', 'action', 'entity_type', 'entity_id', 'description', 'created_at')),
+            'exported_at': datetime.utcnow().isoformat()
+        }
+
+        response = HttpResponse(json.dumps(data, indent=2, default=str), content_type='application/json')
+        response['Content-Disposition'] = f'attachment; filename="teamnext_export_{co.name}_{now_str}.json"'
+        return response
+
+    elif export_format == 'sql':
+        # Portable SQL export
+        sql_lines = [
+            f"-- TeamNext ERP Portable Data Export for {co.name}",
+            f"-- Generated: {datetime.utcnow().isoformat()}",
+            f"-- Workspace: {co.name} ({co.email})",
+            "",
+            "BEGIN TRANSACTION;",
+            ""
+        ]
+        for e in Employee.objects.filter(company=co):
+            sql_lines.append(f"INSERT INTO myapp_employee (name, email, role, phone) VALUES ('{e.name}', '{e.email}', '{e.role}', '{e.phone or ''}');")
+        for inv in Invoice.objects.filter(company=co):
+            sql_lines.append(f"INSERT INTO myapp_invoice (client_name, amount, gst_rate, gst_amount, total_amount, status) VALUES ('{inv.client_name}', {inv.amount}, {inv.gst_rate}, {inv.gst_amount}, {inv.total_amount}, '{inv.status}');")
+        for exp in Expense.objects.filter(company=co):
+            sql_lines.append(f"INSERT INTO myapp_expense (description, category, amount, date) VALUES ('{exp.description}', '{exp.category}', {exp.amount}, '{exp.date}');")
+        for inv_item in InventoryItem.objects.filter(company=co):
+            sql_lines.append(f"INSERT INTO myapp_inventoryitem (name, sku, category, quantity, price) VALUES ('{inv_item.name}', '{inv_item.sku}', '{inv_item.category or ''}', {inv_item.quantity}, {inv_item.price});")
+        sql_lines.append("\nCOMMIT;\n")
+
+        response = HttpResponse("\n".join(sql_lines), content_type='application/sql')
+        response['Content-Disposition'] = f'attachment; filename="teamnext_export_{co.name}_{now_str}.sql"'
+        return response
+
+    else:
+        # Default: Multi-table CSV ZIP archive
+        import csv
+        import io
+        import zipfile
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            # 1. Employees CSV
+            emp_buf = io.StringIO()
+            w = csv.writer(emp_buf)
+            w.writerow(['ID', 'Name', 'Email', 'Role', 'Department', 'Phone', 'Created At'])
+            for e in Employee.objects.filter(company=co):
+                w.writerow([e.id, e.name, e.email, e.role, e.dept.name if e.dept else '', e.phone or '', e.created_at])
+            zip_file.writestr('employees.csv', emp_buf.getvalue())
+
+            # 2. Invoices CSV
+            inv_buf = io.StringIO()
+            w = csv.writer(inv_buf)
+            w.writerow(['ID', 'Client Name', 'Amount', 'GST Rate', 'GST Amount', 'Total Amount', 'Status', 'Created At'])
+            for i in Invoice.objects.filter(company=co):
+                w.writerow([i.id, i.client_name, i.amount, i.gst_rate, i.gst_amount, i.total_amount, i.status, i.created_at])
+            zip_file.writestr('invoices.csv', inv_buf.getvalue())
+
+            # 3. Expenses CSV
+            exp_buf = io.StringIO()
+            w = csv.writer(exp_buf)
+            w.writerow(['ID', 'Description', 'Category', 'Amount', 'Date'])
+            for ex in Expense.objects.filter(company=co):
+                w.writerow([ex.id, ex.description, ex.category, ex.amount, ex.date])
+            zip_file.writestr('expenses.csv', exp_buf.getvalue())
+
+            # 4. Inventory CSV
+            inv_item_buf = io.StringIO()
+            w = csv.writer(inv_item_buf)
+            w.writerow(['ID', 'Name', 'SKU', 'Category', 'Quantity', 'Price', 'Sales Count'])
+            for it in InventoryItem.objects.filter(company=co):
+                w.writerow([it.id, it.name, it.sku, it.category or '', it.quantity, it.price, it.sales_count])
+            zip_file.writestr('inventory.csv', inv_item_buf.getvalue())
+
+            # 5. Tickets CSV
+            t_buf = io.StringIO()
+            w = csv.writer(t_buf)
+            w.writerow(['ID', 'Title', 'Priority', 'Status', 'Assigned To', 'Created At'])
+            for tk in Ticket.objects.filter(project__company=co):
+                w.writerow([tk.id, tk.title, tk.priority, tk.status, tk.employee.name if tk.employee else '', tk.created_at])
+            zip_file.writestr('tickets.csv', t_buf.getvalue())
+
+            # 6. Tasks CSV
+            task_buf = io.StringIO()
+            w = csv.writer(task_buf)
+            w.writerow(['ID', 'Title', 'Priority', 'Status', 'Due Date', 'Est Hours', 'Logged Hours'])
+            for tsk in ProjectTask.objects.filter(project__company=co):
+                w.writerow([tsk.id, tsk.title, tsk.priority, tsk.status, tsk.due_date, tsk.estimated_hours, tsk.logged_hours])
+            zip_file.writestr('tasks.csv', task_buf.getvalue())
+
+            # 7. Audit Trail CSV
+            audit_buf = io.StringIO()
+            w = csv.writer(audit_buf)
+            w.writerow(['ID', 'Timestamp', 'Actor Email', 'Action', 'Entity Type', 'Entity ID', 'Description', 'IP Address'])
+            for a in AuditLog.objects.filter(company=co)[:500]:
+                w.writerow([a.id, a.created_at, a.actor_email, a.action, a.entity_type, a.entity_id, a.description, a.ip_address])
+            zip_file.writestr('audit_trail.csv', audit_buf.getvalue())
+
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="teamnext_export_{co.name}_{now_str}.zip"'
+        return response
+
 
 

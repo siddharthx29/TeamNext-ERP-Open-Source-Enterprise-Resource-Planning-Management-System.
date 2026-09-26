@@ -77,21 +77,90 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'project.wsgi.application'
 
-if 'DATABASE_URL' in os.environ:
+# ============================================================
+# Environment Profile & Operational Mode
+# ============================================================
+DJANGO_ENV = os.environ.get('DJANGO_ENV', 'production' if not DEBUG else 'development').lower()
+
+# ============================================================
+# Database Configuration & Persistence Layer
+# ============================================================
+# 1. Primary strategy: Check DATABASE_URL (12-Factor App standard)
+# 2. Secondary strategy: Check individual DB_* environment variables
+# 3. Development fallback: Local SQLite store
+db_conn_max_age = int(os.environ.get('DB_CONN_MAX_AGE', 600))
+
+if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
-            conn_max_age=600,
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=db_conn_max_age,
             conn_health_checks=True,
             ssl_require=os.environ.get('DATABASE_URL', '').startswith(('postgres://', 'postgresql://'))
         )
     }
+elif os.environ.get('DB_NAME') and (os.environ.get('DB_HOST') or os.environ.get('DB_USER')):
+    engine = os.environ.get('DB_ENGINE', 'django.db.backends.postgresql')
+    DATABASES = {
+        'default': {
+            'ENGINE': engine,
+            'NAME': os.environ.get('DB_NAME'),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432' if 'postgres' in engine else '3306'),
+            'CONN_MAX_AGE': db_conn_max_age,
+            'CONN_HEALTH_CHECKS': True,
+        }
+    }
 else:
+    sqlite_path = os.environ.get('SQLITE_PATH')
+    sqlite_file = Path(sqlite_path) if sqlite_path else (BASE_DIR / 'db.sqlite3')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': sqlite_file,
+            'CONN_MAX_AGE': 0,
         }
     }
+
+# Explicit test database isolation so testing never writes to production database
+DATABASES['default']['TEST'] = {
+    'NAME': 'test_teamnext_db',
+    'CHARSET': 'utf8',
+}
+
+# Critical Production Persistence Safety Guard
+active_engine = DATABASES['default'].get('ENGINE', '')
+if not DEBUG and 'sqlite' in active_engine:
+    allow_sqlite = os.environ.get('ALLOW_SQLITE_IN_PRODUCTION', 'False').lower() in ('true', '1')
+    if not allow_sqlite:
+        import warnings
+        msg = (
+            "CRITICAL PERSISTENCE WARNING: TeamNext ERP is running with an ephemeral SQLite database in production! "
+            "Server restarts or container redeployments will DESTROY all application data. "
+            "Configure a persistent PostgreSQL service using DATABASE_URL or DB_HOST/DB_NAME/DB_USER/DB_PASSWORD, "
+            "or explicitly set ALLOW_SQLITE_IN_PRODUCTION=True if SQLite is mounted on a persistent Docker volume."
+        )
+        warnings.warn(msg, RuntimeWarning)
+        import sys
+        print(f"\n{'!' * 70}\n{msg}\n{'!' * 70}\n", file=sys.stderr)
+
+# ============================================================
+# Database Backup, Retention & Disaster Recovery Configuration
+# ============================================================
+BACKUP_DIR = Path(os.environ.get('BACKUP_DIR', BASE_DIR / 'backups'))
+BACKUP_RETENTION_DAYS = int(os.environ.get('BACKUP_RETENTION_DAYS', 30))
+WEEKLY_BACKUP_RETENTION = int(os.environ.get('WEEKLY_BACKUP_RETENTION', 12))
+MONTHLY_BACKUP_RETENTION = int(os.environ.get('MONTHLY_BACKUP_RETENTION', 12))
+
+# Optional Remote Object Storage (S3 / Cloud Storage / MinIO) for Disaster Recovery
+BACKUP_S3_BUCKET = os.environ.get('BACKUP_S3_BUCKET', '')
+BACKUP_S3_KEY = os.environ.get('BACKUP_S3_KEY', '')
+BACKUP_S3_SECRET = os.environ.get('BACKUP_S3_SECRET', '')
+BACKUP_S3_REGION = os.environ.get('BACKUP_S3_REGION', 'us-east-1')
+BACKUP_S3_ENDPOINT = os.environ.get('BACKUP_S3_ENDPOINT', '')
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
