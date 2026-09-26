@@ -346,4 +346,110 @@ class PersistenceAndRecoveryTests(TestCase):
         self.assertIn('Company', output)
         self.assertIn('Employee', output)
 
+    # --------------------------------------------------------------------------
+    # Test 11: Permanent Account Wipe & Data Purge Facility
+    # --------------------------------------------------------------------------
+    def test_account_deletion_and_wipe_facility(self):
+        """
+        Validates the permanent account deletion and data wiping facility:
+        - Rejects unauthenticated requests (401)
+        - Rejects requests without proper confirmation phrase (400)
+        - Completely purges employee user and associated personal records
+        - Completely wipes company workspace, child records, and flushes session
+        """
+        from django.test import Client
+        client = Client()
+
+        # 1. Unauthenticated request must be rejected
+        unauth_resp = client.post(
+            '/api/account/delete/',
+            json.dumps({'confirmation': 'DELETE MY ACCOUNT'}),
+            content_type='application/json'
+        )
+        self.assertEqual(unauth_resp.status_code, 401)
+
+        # 2. Test employee deletion
+        emp_wipe_co = Company.objects.create(
+            name="Wipe Corp",
+            email="wipe_corp@teamnext.test",
+            password="test_password"
+        )
+        emp_wipe = Employee.objects.create(
+            company=emp_wipe_co,
+            name="Worker To Wipe",
+            email="worker_to_wipe@teamnext.test",
+            password="test_password"
+        )
+        emp_id = emp_wipe.id
+
+        # Authenticate as employee
+        session = client.session
+        session['verified'] = True
+        session['otp_email'] = emp_wipe.email
+        session.save()
+
+        # Missing or invalid confirmation phrase must fail with 400
+        invalid_resp = client.post(
+            '/api/account/delete/',
+            json.dumps({'confirmation': 'wrong phrase'}),
+            content_type='application/json'
+        )
+        self.assertEqual(invalid_resp.status_code, 400)
+        self.assertTrue(Employee.all_objects.filter(id=emp_id).exists())
+
+        # Valid wipe request with exact phrase
+        wipe_resp = client.post(
+            '/api/account/delete/',
+            json.dumps({'confirmation': 'DELETE MY ACCOUNT'}),
+            content_type='application/json'
+        )
+        self.assertEqual(wipe_resp.status_code, 200)
+        wipe_data = wipe_resp.json()
+        self.assertEqual(wipe_data.get('status'), 'ok')
+        self.assertIn('/login/?wiped=1', wipe_data.get('redirect_url'))
+
+        # Employee record must be permanently purged from database
+        self.assertFalse(Employee.all_objects.filter(id=emp_id).exists())
+
+        # 3. Test company account wipe
+        client = Client()
+        co_to_wipe = Company.objects.create(
+            name="Full Purge Enterprise",
+            email="purge_enterprise@teamnext.test",
+            password="test_password"
+        )
+        co_id = co_to_wipe.id
+        proj = Project.objects.create(company=co_to_wipe, name="Classified Project")
+        proj_id = proj.id
+        task = ProjectTask.objects.create(project=proj, title="Wipe Task")
+        task_id = task.id
+        inv = Invoice.objects.create(company=co_to_wipe, client_name="Purge Client", amount=1500.0)
+        inv_id = inv.id
+        emp_in_co = Employee.objects.create(company=co_to_wipe, name="Sub Employee", email="sub_emp@teamnext.test")
+        sub_emp_id = emp_in_co.id
+
+        # Authenticate as company workspace owner
+        session = client.session
+        session['verified'] = True
+        session['otp_email'] = co_to_wipe.email
+        session.save()
+
+        # Execute wipe with confirmation
+        co_wipe_resp = client.post(
+            '/api/account/delete/',
+            json.dumps({'confirmation': 'DELETE MY ACCOUNT'}),
+            content_type='application/json'
+        )
+        self.assertEqual(co_wipe_resp.status_code, 200)
+        co_wipe_data = co_wipe_resp.json()
+        self.assertEqual(co_wipe_data.get('status'), 'ok')
+
+        # Verify company and ALL child records are permanently hard deleted
+        self.assertFalse(Company.all_objects.filter(id=co_id).exists())
+        self.assertFalse(Project.all_objects.filter(id=proj_id).exists())
+        self.assertFalse(ProjectTask.all_objects.filter(id=task_id).exists())
+        self.assertFalse(Invoice.all_objects.filter(id=inv_id).exists())
+        self.assertFalse(Employee.all_objects.filter(id=sub_emp_id).exists())
+
+
 

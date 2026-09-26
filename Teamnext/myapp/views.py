@@ -213,6 +213,8 @@ def find_company_by_identifier(identifier):
 
 
 def login_view(request):
+    if request.GET.get('wiped'):
+        messages.success(request, "Your account and associated workspace data have been permanently wiped from the platform.")
     companies = []
     qs = Company.objects.all().order_by('id')
     for c in qs:
@@ -1953,6 +1955,122 @@ def save_settings(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+@csrf_exempt
+def api_delete_account(request):
+    """
+    Permanently wipes the authenticated user's account and associated records from TeamNext ERP.
+    Accepts confirmation phrase 'DELETE MY ACCOUNT' or the user's password.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST method required.'}, status=405)
+
+    if not request.session.get('verified'):
+        return JsonResponse({'status': 'error', 'message': 'Authentication required. Please login.'}, status=401)
+
+    email = (request.session.get('otp_email') or request.session.get('email') or '').strip().lower()
+    co, emp = get_user_company_and_employee(email)
+
+    if not co and not emp:
+        return JsonResponse({'status': 'error', 'message': 'Account not found in system.'}, status=404)
+
+    data = parse_request_data(request) or {}
+    confirmation = (data.get('confirmation') or '').strip()
+    password = (data.get('password') or '').strip()
+
+    is_company_owner = Company.objects.filter(email__iexact=email).exists() or (co and co.email.lower() == email)
+
+    # Validate confirmation phrase or password
+    confirmed_by_phrase = (confirmation.upper() == 'DELETE MY ACCOUNT' or confirmation.lower() == email.lower())
+    confirmed_by_password = False
+
+    target_obj = co if is_company_owner else emp
+    if password and target_obj:
+        confirmed_by_password = verify_and_upgrade_password(target_obj, password)
+
+    if not confirmed_by_phrase and not confirmed_by_password:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Please type "DELETE MY ACCOUNT" or enter your correct password to confirm account deletion.'
+        }, status=400)
+
+    try:
+        with transaction.atomic():
+            if is_company_owner and co:
+                # Wiping entire company tenant and associated data
+                actor_name = co.name
+                log_audit(
+                    company=None,
+                    actor_email=email,
+                    actor_name=actor_name,
+                    action='DELETE',
+                    entity_type='CompanyWipe',
+                    entity_id=str(co.id),
+                    entity_name=co.name,
+                    description=f"Company workspace '{co.name}' ({co.email}) permanently wiped by owner.",
+                    ip_address=get_client_ip(request)
+                )
+
+                # Hard delete / wipe all child records to ensure complete purge
+                ChatMessageMedia.objects.filter(message__project__company=co).delete()
+                ChatMessage.objects.filter(project__company=co).hard_delete()
+                Ticket.objects.filter(project__company=co).hard_delete()
+                ProjectTask.objects.filter(project__company=co).hard_delete()
+                ProjectMember.objects.filter(project__company=co).hard_delete()
+                Project.objects.filter(company=co).hard_delete()
+                Department.objects.filter(company=co).hard_delete()
+                Invoice.objects.filter(company=co).hard_delete()
+                Expense.objects.filter(company=co).hard_delete()
+                Payroll.objects.filter(company=co).hard_delete()
+                VendorPayment.objects.filter(company=co).hard_delete()
+                BankTransaction.objects.filter(company=co).hard_delete()
+                InventoryItem.objects.filter(company=co).hard_delete()
+                LeaveRequest.objects.filter(employee__company=co).hard_delete()
+                Attendance.objects.filter(employee__company=co).hard_delete()
+                SocialItem.objects.filter(company=co).hard_delete()
+                Feedback.objects.filter(company=co).hard_delete()
+                Notification.objects.filter(user__company=co).hard_delete()
+                Employee.objects.filter(company=co).hard_delete()
+                co.hard_delete()
+
+            elif emp:
+                # Wiping individual employee user account
+                actor_name = emp.name
+                log_audit(
+                    company=co,
+                    actor_email=email,
+                    actor_name=actor_name,
+                    action='DELETE',
+                    entity_type='EmployeeWipe',
+                    entity_id=str(emp.id),
+                    entity_name=emp.name,
+                    description=f"Employee account '{emp.name}' ({emp.email}) permanently wiped.",
+                    ip_address=get_client_ip(request)
+                )
+
+                ProjectMember.objects.filter(employee=emp).hard_delete()
+                Attendance.objects.filter(employee=emp).hard_delete()
+                LeaveRequest.objects.filter(employee=emp).hard_delete()
+                Notification.objects.filter(user=emp).hard_delete()
+                Ticket.objects.filter(employee=emp).update(employee=None)
+                ProjectTask.objects.filter(assigned_to=emp).update(assigned_to=None)
+                ProjectTask.objects.filter(created_by=emp).update(created_by=None)
+                Feedback.objects.filter(employee=emp).update(employee=None)
+                Payroll.objects.filter(employee=emp).hard_delete()
+                emp.hard_delete()
+
+        # Completely flush user session
+        request.session.flush()
+
+        return JsonResponse({
+            'status': 'ok',
+            'message': 'Your account and all associated records have been permanently wiped.',
+            'redirect_url': '/login/?wiped=1'
+        })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f"Account wipe failed: {str(e)}"}, status=500)
+
+
 HEX_PASSCODE_PATTERN = re.compile(r'^[0-9a-fA-F]{4}$')
 DANGEROUS_EXTENSIONS = {
     '.exe', '.bat', '.cmd', '.sh', '.py', '.php', '.js', '.vbs', '.jar',
@@ -3072,23 +3190,24 @@ def settings_page(request):
         messages.error(request, 'Please login to access settings.')
         return redirect('login')
 
-    email = (request.session.get('otp_email') or '').strip().lower()
-    co = Company.objects.filter(email__iexact=email).first()
-    emp = Employee.objects.filter(email__iexact=email).first()
+    email = (request.session.get('otp_email') or request.session.get('email') or '').strip().lower()
+    co, emp = get_user_company_and_employee(email)
 
-    is_mod = False
-    if emp and not co:
-        co = emp.company
-        is_mod = ProjectMember.objects.filter(employee=emp, can_modify_settings=True).exists()
-
-    if not co or (not Company.objects.filter(email__iexact=email).exists() and not is_mod):
-        messages.error(request, "Access Denied: Only Workspace Admins or Authorized Moderators can view this page.")
+    if not co and not emp:
+        messages.error(request, "Account not found.")
         return redirect('dashboard')
 
+    is_owner = Company.objects.filter(email__iexact=email).exists() or (co and co.email.lower() == email)
+    is_mod = ProjectMember.objects.filter(employee=emp, can_modify_settings=True).exists() if emp else False
+
     return render(request, 'settings_page.html', {
-        'company_name': co.name,
+        'company_name': co.name if co else "TeamNext",
         'email': email,
-        'co_info': co
+        'co_info': co,
+        'emp_info': emp,
+        'is_company_owner': is_owner,
+        'is_company_admin': is_owner or is_mod,
+        'user_type': 'Company / Workspace Owner' if is_owner else f"Employee ({emp.role if emp and emp.role else 'Staff'})"
     })
 
 

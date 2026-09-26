@@ -157,5 +157,8 @@ urlpatterns = [
     path("api/admin/backup/download/<str:filename>/", views.api_admin_download_backup, name="api_admin_download_backup"),
     path("api/admin/recovery/restore/", views.api_admin_restore_soft_deleted, name="api_admin_restore_soft_deleted"),
     path("api/admin/export/", views.api_admin_export_data, name="api_admin_export_data"),
+
+    # Account Wipe & Permanent Deletion
+    path("api/account/delete/", views.api_delete_account, name="api_delete_account"),
 ]
 
