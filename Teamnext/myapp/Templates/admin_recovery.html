@@ -108,7 +108,7 @@
             margin-bottom: 16px;
         }
         .tab-btn {
-            padding: 8px 16px;
+            padding: 10px 18px;
             background: none;
             border: none;
             border-bottom: 2px solid transparent;
@@ -116,10 +116,61 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .tab-btn.active {
             color: var(--primary);
             border-bottom-color: var(--primary);
+            background: var(--bg-hover);
+            border-radius: 8px 8px 0 0;
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: 1px solid #dc2626;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-primary {
+            background: var(--primary, #3b82f6);
+            color: white;
+            border: 1px solid var(--primary-dark, #2563eb);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color, #d1d5db);
+            color: var(--text-main, #111827);
+        }
+        .btn-outline:hover {
+            background: var(--bg-hover, #f3f4f6);
+        }
+        .toast-banner {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 20px;
+            background: #1f2937;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -131,7 +182,7 @@
         <div class="erp-3d-shape erp-3d-mesh"></div>
     </div>
 
-    {% include "components/sidebar.html" with active_page="recovery" %}
+    {% include "components/sidebar.html" with active_page="recovery" is_company_admin=True %}
 
     <div class="main-wrapper">
         {% include "components/topbar.html" with page_title="Database & Disaster Recovery" %}
@@ -144,7 +195,7 @@
                     <div class="stat-value" style="display: flex; align-items: center; gap: 8px;">
                         <span>{{ engine|upper }}</span>
                         {% if persistence_safe %}
-                            <span class="badge badge-success">Durable</span>
+                            <span class="badge badge-success">Durable Cluster</span>
                         {% else %}
                             <span class="badge badge-danger">Ephemeral Risk</span>
                         {% endif %}
@@ -154,14 +205,17 @@
 
                 <div class="stat-card {% if conn_ok %}success{% else %}danger{% endif %}">
                     <span class="stat-label">Connection Health</span>
-                    <div class="stat-value">
+                    <div class="stat-value" style="display: flex; align-items: center; justify-content: space-between;">
                         {% if conn_ok %}
                             <span style="color: #10b981;">Online ({{ latency_ms }} ms)</span>
                         {% else %}
                             <span style="color: #ef4444;">Offline</span>
                         {% endif %}
+                        <button onclick="checkLiveHealth()" class="btn-sm btn-outline" style="font-size: 0.75rem;" title="Test active connection latency">
+                            Ping
+                        </button>
                     </div>
-                    <span class="stat-desc">Zero connection leaks | Active pooling</span>
+                    <span class="stat-desc">Active connection pooling & health probes</span>
                 </div>
 
                 <div class="stat-card {% if latest_backup and latest_backup.status == 'verified' %}success{% else %}warning{% endif %}">
@@ -178,8 +232,8 @@
 
                 <div class="stat-card {% if soft_deleted_count > 0 %}info{% else %}success{% endif %}">
                     <span class="stat-label">Recoverable Entities</span>
-                    <div class="stat-value" style="color: var(--primary);">{{ soft_deleted_count }}</div>
-                    <span class="stat-desc">Soft-deleted items ready for instant undo</span>
+                    <div class="stat-value" style="color: var(--primary);" id="statSoftDeletedCount">{{ soft_deleted_count }}</div>
+                    <span class="stat-desc">Soft-deleted items ready for instant restoration</span>
                 </div>
             </div>
 
@@ -200,6 +254,12 @@
                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
                         Verify Backup Integrity
+                    </button>
+                    <button class="btn btn-outline" onclick="checkLiveHealth()" id="btnLiveHealth">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Test Health Probe
                     </button>
                 </div>
 
@@ -222,15 +282,21 @@
             </div>
 
             <!-- Tabbed Panel -->
-            <div class="panel">
+            <div class="panel" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
                 <div class="tab-nav">
-                    <button class="tab-btn active" onclick="switchTab('backupsTab')">Stored Backups ({{ backups|length }})</button>
-                    <button class="tab-btn" onclick="switchTab('softDeletedTab')">Soft-Deleted Records ({{ soft_deleted_count }})</button>
-                    <button class="tab-btn" onclick="switchTab('auditTab')">Audit Trail ({{ audit_logs|length }})</button>
+                    <button class="tab-btn active" onclick="switchTab(this, 'backupsTab')">
+                        📁 Stored Backups ({{ backups|length }})
+                    </button>
+                    <button class="tab-btn" onclick="switchTab(this, 'softDeletedTab')">
+                        ♻️ Soft-Deleted Records (<span id="softDeletedBadge">{{ soft_deleted_count }}</span>)
+                    </button>
+                    <button class="tab-btn" onclick="switchTab(this, 'auditTab')">
+                        📜 Audit Trail ({{ audit_logs|length }})
+                    </button>
                 </div>
 
                 <!-- Backups Tab -->
-                <div id="backupsTab" class="tab-content">
+                <div id="backupsTab" class="tab-content" style="display: block;">
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
@@ -242,6 +308,7 @@
                                     <th>SHA-256 (Prefix)</th>
                                     <th>Status</th>
                                     <th>Created</th>
+                                    <th style="text-align: right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -264,10 +331,18 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ b.created_at|date:"M d, Y H:i:s" }}</td>
+                                    <td style="text-align: right; white-space: nowrap;">
+                                        <a href="/api/admin/backup/download/{{ b.filename }}/" class="btn btn-sm btn-outline" title="Download backup archive to local storage">
+                                            Download
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" onclick="restoreDatabase({{ b.id }}, '{{ b.filename }}')" title="Restore entire database state from this snapshot">
+                                            Restore DB
+                                        </button>
+                                    </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">
                                         No backups recorded yet. Click "Create Backup Now" above to initiate your first automated snapshot.
                                     </td>
                                 </tr>
@@ -306,7 +381,7 @@
                                     </td>
                                 </tr>
                                 {% empty %}
-                                <tr>
+                                <tr id="emptySoftDeletedRow">
                                     <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
                                         No soft-deleted records. All application entities are active.
                                     </td>
@@ -370,12 +445,45 @@
         </main>
     </div>
 
+    <!-- Notification Toast -->
+    <div id="toastBanner" class="toast-banner">
+        <span id="toastMessage">Notification</span>
+    </div>
+
     <script>
-        function switchTab(tabId) {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue || '';
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toastBanner');
+            const msg = document.getElementById('toastMessage');
+            if (!toast || !msg) return;
+            msg.innerText = message;
+            toast.style.display = 'flex';
+            toast.style.background = type === 'error' ? '#ef4444' : '#10b981';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 5000);
+        }
+
+        function switchTab(btnElement, tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-            document.getElementById(tabId).style.display = 'block';
-            event.target.classList.add('active');
+            const targetContent = document.getElementById(tabId);
+            if (targetContent) targetContent.style.display = 'block';
+            if (btnElement) btnElement.classList.add('active');
         }
 
         async function triggerBackup(backupType) {
@@ -387,13 +495,16 @@
             try {
                 const resp = await fetch('/api/admin/backup/create/', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
                     body: JSON.stringify({ type: backupType })
                 });
                 const data = await resp.json();
                 if (data.status === 'ok') {
-                    alert(data.message);
-                    window.location.reload();
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 1000);
                 } else {
                     alert('Backup error: ' + (data.message || 'Unknown error'));
                 }
@@ -414,7 +525,10 @@
             try {
                 const resp = await fetch('/api/admin/backup/verify/', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'}
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
                 });
                 const data = await resp.json();
                 if (data.status === 'ok') {
@@ -431,6 +545,62 @@
             }
         }
 
+        async function checkLiveHealth() {
+            const btn = document.getElementById('btnLiveHealth');
+            if (btn) btn.disabled = true;
+            try {
+                const resp = await fetch('/api/health/db/');
+                const data = await resp.json();
+                const latency = data.database ? data.database.latency_ms : 'N/A';
+                const engine = data.database ? data.database.engine : 'N/A';
+                const tier = data.persistence ? data.persistence.tier : 'N/A';
+                const status = data.healthy ? 'HEALTHY & ONLINE' : 'ATTENTION REQUIRED';
+                alert(`TeamNext Database Health Audit:\n\nStatus: ${status}\nEngine: ${engine}\nLatency: ${latency} ms\nPersistence Tier: ${tier}`);
+            } catch (err) {
+                alert('Error reaching database health probe: ' + err.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function restoreDatabase(backupId, filename) {
+            const confirmText = prompt(
+                `CRITICAL RECOVERY OPERATION:\n\n` +
+                `You are about to RESTORE the database from snapshot archive:\n"${filename}"\n\n` +
+                `All active ERP records will be aligned to this backup. A safety backup of the current database will be generated automatically before restoration.\n\n` +
+                `Type RESTORE in capital letters below to confirm:`
+            );
+
+            if (confirmText !== 'RESTORE') {
+                if (confirmText !== null) {
+                    alert('Restoration cancelled. Confirmation text did not match.');
+                }
+                return;
+            }
+
+            showToast('Initiating safe database restoration...', 'info');
+
+            try {
+                const resp = await fetch('/api/admin/backup/restore-database/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ backup_id: backupId, filename: filename })
+                });
+                const data = await resp.json();
+                if (data.status === 'ok') {
+                    alert('✔ DATABASE RESTORATION SUCCEEDED!\n\n' + data.message);
+                    window.location.reload();
+                } else {
+                    alert('❌ Restoration Error: ' + (data.message || 'Restoration failed'));
+                }
+            } catch (err) {
+                alert('❌ Connection failed during restoration: ' + err.message);
+            }
+        }
+
         async function restoreRecord(entityType, entityId) {
             if (!confirm(`Are you sure you want to restore ${entityType} #${entityId}?`)) {
                 return;
@@ -439,14 +609,31 @@
             try {
                 const resp = await fetch('/api/admin/recovery/restore/', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
                     body: JSON.stringify({ type: entityType, id: entityId })
                 });
                 const data = await resp.json();
                 if (data.status === 'ok') {
-                    alert(data.message);
+                    showToast(data.message, 'success');
                     const row = document.getElementById(`row-${entityType}-${entityId}`);
-                    if (row) row.remove();
+                    if (row) {
+                        row.style.transition = 'all 0.3s ease';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 300);
+                    }
+                    const badge = document.getElementById('softDeletedBadge');
+                    const statCount = document.getElementById('statSoftDeletedCount');
+                    if (badge) {
+                        let cur = parseInt(badge.innerText) || 1;
+                        badge.innerText = Math.max(0, cur - 1);
+                    }
+                    if (statCount) {
+                        let cur = parseInt(statCount.innerText) || 1;
+                        statCount.innerText = Math.max(0, cur - 1);
+                    }
                 } else {
                     alert('Restore error: ' + (data.message || 'Could not restore record'));
                 }

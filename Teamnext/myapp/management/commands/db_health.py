@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.db import connection
 from django.utils import timezone
@@ -169,4 +169,4 @@ class Command(BaseCommand):
             self.stdout.write("=" * 70)
 
         if not health_report['healthy'] and options.get('strict', False):
-            sys.exit(1)
+            raise CommandError("Database health check failed under strict enforcement.")

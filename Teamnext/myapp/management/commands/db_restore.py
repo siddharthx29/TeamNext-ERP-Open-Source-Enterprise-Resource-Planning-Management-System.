@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 from django.conf import settings
 from django.db import connection, transaction
@@ -78,7 +78,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"Selected backup by Record ID #{backup_id}: {backup_path}")
             except DatabaseBackupRecord.DoesNotExist:
                 self.stderr.write(self.style.ERROR(f"Backup record ID #{backup_id} not found."))
-                sys.exit(1)
+                raise CommandError(f"Backup record ID #{backup_id} not found.")
 
         elif target_file:
             backup_path = Path(target_file)
@@ -87,17 +87,17 @@ class Command(BaseCommand):
             all_backups = list(base_dir.rglob('*.json.gz'))
             if not all_backups:
                 self.stderr.write(self.style.ERROR(f"No backup archives (.json.gz) found in {base_dir}."))
-                sys.exit(1)
+                raise CommandError(f"No backup archives (.json.gz) found in {base_dir}.")
             backup_path = sorted(all_backups, key=lambda p: p.stat().st_mtime, reverse=True)[0]
             self.stdout.write(f"Located newest backup archive: {backup_path}")
 
         else:
             self.stderr.write(self.style.ERROR("Please specify --file=<path>, --latest, or --backup-id=<id> to restore."))
-            sys.exit(1)
+            raise CommandError("Please specify --file=<path>, --latest, or --backup-id=<id> to restore.")
 
         if not backup_path.exists():
             self.stderr.write(self.style.ERROR(f"Backup file does not exist: {backup_path}"))
-            sys.exit(1)
+            raise CommandError(f"Backup file does not exist: {backup_path}")
 
         # 2. Safety confirmation check
         if confirm != "CONFIRM_RESTORE":
@@ -105,7 +105,7 @@ class Command(BaseCommand):
                 "\nSAFETY SAFEGUARD: Restoring a database replaces or updates active records.\n"
                 "To proceed, rerun the command with --confirm=CONFIRM_RESTORE"
             ))
-            sys.exit(1)
+            raise CommandError("Restoration requires confirmation. Pass --confirm=CONFIRM_RESTORE.")
 
         # 3. Verify backup file integrity before applying
         self.stdout.write(f"Verifying integrity of {backup_path.name}...")
@@ -123,7 +123,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f"[OK] Backup decompression and structure valid ({len(test_parse)} entities)."))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"FATAL: Backup file is corrupted or unreadable: {e}"))
-            sys.exit(1)
+            raise CommandError(f"Backup file is corrupted or unreadable: {e}")
 
         # 4. Create Pre-Restoration Safety Snapshot
         if not skip_safety:
@@ -149,7 +149,7 @@ class Command(BaseCommand):
 
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"FATAL: Restoration failed during loaddata: {e}"))
-            sys.exit(1)
+            raise CommandError(f"Restoration failed during loaddata: {e}")
         finally:
             if temp_json.exists():
                 temp_json.unlink()

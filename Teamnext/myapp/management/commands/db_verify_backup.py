@@ -5,7 +5,7 @@ import json
 import hashlib
 from pathlib import Path
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.utils import timezone
 
@@ -41,7 +41,7 @@ class Command(BaseCommand):
             target = Path(specific_file)
             if not target.exists():
                 self.stderr.write(self.style.ERROR(f"File not found: {target}"))
-                sys.exit(1)
+                raise CommandError(f"File not found: {target}")
             files_to_check.append(target)
         else:
             files_to_check = list(base_dir.rglob('*.json.gz'))
@@ -87,7 +87,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("ALL AUDITED BACKUP ARCHIVES PASSED INTEGRITY VALIDATION."))
         else:
             self.stderr.write(self.style.ERROR("ONE OR MORE BACKUP ARCHIVES FAILED INTEGRITY VALIDATION!"))
-            sys.exit(1)
+            raise CommandError("ONE OR MORE BACKUP ARCHIVES FAILED INTEGRITY VALIDATION!")
 
     def verify_single_backup(self, path):
         try:

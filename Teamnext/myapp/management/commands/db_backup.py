@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 from django.conf import settings
 from django.utils import timezone
@@ -145,7 +145,7 @@ class Command(BaseCommand):
                 db_record.verification_notes = f"Export failed: {str(e)}"
                 db_record.save()
             self.stderr.write(self.style.ERROR(f"FATAL: Database backup failed: {e}"))
-            sys.exit(1)
+            raise CommandError(f"Database backup failed: {e}")
 
         # 3. Compute SHA-256 hash and size
         file_size = backup_path.stat().st_size

@@ -153,6 +153,8 @@ urlpatterns = [
     path("api/health/db/", views.api_db_health, name="api_db_health"),
     path("api/admin/backup/create/", views.api_admin_trigger_backup, name="api_admin_trigger_backup"),
     path("api/admin/backup/verify/", views.api_admin_verify_backups, name="api_admin_verify_backups"),
+    path("api/admin/backup/restore-database/", views.api_admin_restore_database, name="api_admin_restore_database"),
+    path("api/admin/backup/download/<str:filename>/", views.api_admin_download_backup, name="api_admin_download_backup"),
     path("api/admin/recovery/restore/", views.api_admin_restore_soft_deleted, name="api_admin_restore_soft_deleted"),
     path("api/admin/export/", views.api_admin_export_data, name="api_admin_export_data"),
 ]
