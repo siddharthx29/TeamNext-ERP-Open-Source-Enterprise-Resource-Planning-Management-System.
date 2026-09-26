@@ -17,6 +17,7 @@
             gap: 16px;
             margin-bottom: 24px;
         }
+
         .stat-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-color);
@@ -29,6 +30,7 @@
             overflow: hidden;
             box-shadow: var(--shadow-sm);
         }
+
         .stat-card::before {
             content: '';
             position: absolute;
@@ -38,9 +40,19 @@
             height: 100%;
             background: var(--primary);
         }
-        .stat-card.success::before { background: #10b981; }
-        .stat-card.warning::before { background: #f59e0b; }
-        .stat-card.danger::before { background: #ef4444; }
+
+        .stat-card.success::before {
+            background: #10b981;
+        }
+
+        .stat-card.warning::before {
+            background: #f59e0b;
+        }
+
+        .stat-card.danger::before {
+            background: #ef4444;
+        }
+
         .stat-label {
             font-size: 0.8rem;
             text-transform: uppercase;
@@ -48,15 +60,18 @@
             color: var(--text-muted);
             font-weight: 600;
         }
+
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-main);
         }
+
         .stat-desc {
             font-size: 0.85rem;
             color: var(--text-muted);
         }
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -66,10 +81,27 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
-        .badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-        .badge-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-        .badge-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        .badge-info { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
         .action-bar {
             display: flex;
             flex-wrap: wrap;
@@ -78,35 +110,43 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .btn-group {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
+
         .table-responsive {
             overflow-x: auto;
         }
+
         .data-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.875rem;
         }
-        .data-table th, .data-table td {
+
+        .data-table th,
+        .data-table td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
+
         .data-table th {
             background: var(--bg-hover);
             color: var(--text-muted);
             font-weight: 600;
         }
+
         .tab-nav {
             display: flex;
             gap: 8px;
             border-bottom: 1px solid var(--border-color);
             margin-bottom: 16px;
         }
+
         .tab-btn {
             padding: 10px 18px;
             background: none;
@@ -120,12 +160,14 @@
             align-items: center;
             gap: 6px;
         }
+
         .tab-btn.active {
             color: var(--primary);
             border-bottom-color: var(--primary);
             background: var(--bg-hover);
             border-radius: 8px 8px 0 0;
         }
+
         .btn-sm {
             padding: 4px 10px;
             font-size: 0.8rem;
@@ -136,27 +178,33 @@
             gap: 4px;
             cursor: pointer;
         }
+
         .btn-danger {
             background: #ef4444;
             color: white;
             border: 1px solid #dc2626;
         }
+
         .btn-danger:hover {
             background: #dc2626;
         }
+
         .btn-primary {
             background: var(--primary, #3b82f6);
             color: white;
             border: 1px solid var(--primary-dark, #2563eb);
         }
+
         .btn-outline {
             background: transparent;
             border: 1px solid var(--border-color, #d1d5db);
             color: var(--text-main, #111827);
         }
+
         .btn-outline:hover {
             background: var(--bg-hover, #f3f4f6);
         }
+
         .toast-banner {
             position: fixed;
             bottom: 24px;
@@ -165,7 +213,7 @@
             background: #1f2937;
             color: white;
             border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             z-index: 9999;
             display: none;
             align-items: center;
@@ -195,9 +243,9 @@
                     <div class="stat-value" style="display: flex; align-items: center; gap: 8px;">
                         <span>{{ engine|upper }}</span>
                         {% if persistence_safe %}
-                            <span class="badge badge-success">Durable Cluster</span>
+                        <span class="badge badge-success">Durable Cluster</span>
                         {% else %}
-                            <span class="badge badge-danger">Ephemeral Risk</span>
+                        <span class="badge badge-danger">Ephemeral Risk</span>
                         {% endif %}
                     </div>
                     <span class="stat-desc">Host: {{ db_host }} | DB: {{ db_name|truncatechars:20 }}</span>
@@ -207,32 +255,36 @@
                     <span class="stat-label">Connection Health</span>
                     <div class="stat-value" style="display: flex; align-items: center; justify-content: space-between;">
                         {% if conn_ok %}
-                            <span style="color: #10b981;">Online ({{ latency_ms }} ms)</span>
+                        <span style="color: #10b981;">Online ({{ latency_ms }} ms)</span>
                         {% else %}
-                            <span style="color: #ef4444;">Offline</span>
+                        <span style="color: #ef4444;">Offline</span>
                         {% endif %}
-                        <button onclick="checkLiveHealth()" class="btn-sm btn-outline" style="font-size: 0.75rem;" title="Test active connection latency">
+                        <button onclick="checkLiveHealth()" class="btn-sm btn-outline" style="font-size: 0.75rem;"
+                            title="Test active connection latency">
                             Ping
                         </button>
                     </div>
                     <span class="stat-desc">Active connection pooling & health probes</span>
                 </div>
 
-                <div class="stat-card {% if latest_backup and latest_backup.status == 'verified' %}success{% else %}warning{% endif %}">
+                <div
+                    class="stat-card {% if latest_backup and latest_backup.status == 'verified' %}success{% else %}warning{% endif %}">
                     <span class="stat-label">Backup Architecture</span>
                     <div class="stat-value">
                         {% if latest_backup %}
-                            <span>{{ latest_backup.created_at|timesince }} ago</span>
+                        <span>{{ latest_backup.created_at|timesince }} ago</span>
                         {% else %}
-                            <span style="color: #f59e0b;">No Backup Yet</span>
+                        <span style="color: #f59e0b;">No Backup Yet</span>
                         {% endif %}
                     </div>
-                    <span class="stat-desc">Retention: {{ backup_retention_days }}d daily | {{ weekly_retention }}w weekly</span>
+                    <span class="stat-desc">Retention: {{ backup_retention_days }}d daily | {{ weekly_retention }}w
+                        weekly</span>
                 </div>
 
                 <div class="stat-card {% if soft_deleted_count > 0 %}info{% else %}success{% endif %}">
                     <span class="stat-label">Recoverable Entities</span>
-                    <div class="stat-value" style="color: var(--primary);" id="statSoftDeletedCount">{{ soft_deleted_count }}</div>
+                    <div class="stat-value" style="color: var(--primary);" id="statSoftDeletedCount">{{
+                        soft_deleted_count }}</div>
                     <span class="stat-desc">Soft-deleted items ready for instant restoration</span>
                 </div>
             </div>
@@ -241,7 +293,8 @@
             <div class="action-bar">
                 <div class="btn-group">
                     <button class="btn btn-primary" onclick="triggerBackup('manual')" id="btnTriggerBackup">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
                             <polyline points="17 21 17 13 7 13 7 21"></polyline>
                             <polyline points="7 3 7 8 15 8"></polyline>
@@ -249,14 +302,16 @@
                         Create Backup Now
                     </button>
                     <button class="btn btn-secondary" onclick="verifyAllBackups()" id="btnVerifyBackups">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
                         Verify Backup Integrity
                     </button>
                     <button class="btn btn-outline" onclick="checkLiveHealth()" id="btnLiveHealth">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                         </svg>
                         Test Health Probe
@@ -265,7 +320,8 @@
 
                 <div class="btn-group">
                     <a href="/api/admin/export/?format=csv" class="btn btn-outline" style="text-decoration: none;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -282,7 +338,8 @@
             </div>
 
             <!-- Tabbed Panel -->
-            <div class="panel" style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+            <div class="panel"
+                style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
                 <div class="tab-nav">
                     <button class="tab-btn active" onclick="switchTab(this, 'backupsTab')">
                         📁 Stored Backups ({{ backups|length }})
@@ -318,32 +375,39 @@
                                     <td><span class="badge badge-info">{{ b.backup_type|title }}</span></td>
                                     <td>{{ b.engine }}</td>
                                     <td>{{ b.size_bytes|filesizeformat }}</td>
-                                    <td style="font-family: monospace; color: var(--text-muted);">{{ b.sha256_hash|slice:":12" }}...</td>
+                                    <td style="font-family: monospace; color: var(--text-muted);">{{
+                                        b.sha256_hash|slice:":12" }}...</td>
                                     <td>
                                         {% if b.status == 'verified' %}
-                                            <span class="badge badge-success">Verified & Intact</span>
+                                        <span class="badge badge-success">Verified & Intact</span>
                                         {% elif b.status == 'success' %}
-                                            <span class="badge badge-info">Created</span>
+                                        <span class="badge badge-info">Created</span>
                                         {% elif b.status == 'in_progress' %}
-                                            <span class="badge badge-warning">In Progress</span>
+                                        <span class="badge badge-warning">In Progress</span>
                                         {% else %}
-                                            <span class="badge badge-danger">Corrupted / Failed</span>
+                                        <span class="badge badge-danger">Corrupted / Failed</span>
                                         {% endif %}
                                     </td>
                                     <td>{{ b.created_at|date:"M d, Y H:i:s" }}</td>
                                     <td style="text-align: right; white-space: nowrap;">
-                                        <a href="/api/admin/backup/download/{{ b.filename }}/" class="btn btn-sm btn-outline" title="Download backup archive to local storage">
+                                        <a href="/api/admin/backup/download/{{ b.filename }}/"
+                                            class="btn btn-sm btn-outline"
+                                            title="Download backup archive to local storage">
                                             Download
                                         </a>
-                                        <button class="btn btn-sm btn-danger" onclick="restoreDatabase({{ b.id }}, '{{ b.filename }}')" title="Restore entire database state from this snapshot">
+                                        <button class="btn btn-sm btn-danger"
+                                            onclick="restoreDatabase({{ b.id }}, '{{ b.filename }}')"
+                                            title="Restore entire database state from this snapshot">
                                             Restore DB
                                         </button>
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">
-                                        No backups recorded yet. Click "Create Backup Now" above to initiate your first automated snapshot.
+                                    <td colspan="8"
+                                        style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                        No backups recorded yet. Click "Create Backup Now" above to initiate your first
+                                        automated snapshot.
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -375,14 +439,16 @@
                                     <td>{{ r.deleted_at|date:"M d, Y H:i" }}</td>
                                     <td>{{ r.deleted_by }}</td>
                                     <td style="text-align: right;">
-                                        <button class="btn btn-sm btn-primary" onclick="restoreRecord('{{ r.type }}', '{{ r.id }}')">
+                                        <button class="btn btn-sm btn-primary"
+                                            onclick="restoreRecord('{{ r.type }}', '{{ r.id }}')">
                                             Restore Record
                                         </button>
                                     </td>
                                 </tr>
                                 {% empty %}
                                 <tr id="emptySoftDeletedRow">
-                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                    <td colspan="6"
+                                        style="text-align: center; color: var(--text-muted); padding: 32px;">
                                         No soft-deleted records. All application entities are active.
                                     </td>
                                 </tr>
@@ -413,17 +479,17 @@
                                     <td>{{ a.actor_email }}</td>
                                     <td>
                                         {% if a.action == 'CREATE' %}
-                                            <span class="badge badge-success">Create</span>
+                                        <span class="badge badge-success">Create</span>
                                         {% elif a.action == 'DELETE' %}
-                                            <span class="badge badge-danger">Soft Delete</span>
+                                        <span class="badge badge-danger">Soft Delete</span>
                                         {% elif a.action == 'RESTORE' %}
-                                            <span class="badge badge-info">Restore</span>
+                                        <span class="badge badge-info">Restore</span>
                                         {% elif a.action == 'BACKUP' %}
-                                            <span class="badge badge-success">Backup</span>
+                                        <span class="badge badge-success">Backup</span>
                                         {% elif a.action == 'RECOVERY' %}
-                                            <span class="badge badge-warning">Recovery</span>
+                                        <span class="badge badge-warning">Recovery</span>
                                         {% else %}
-                                            <span class="badge badge-info">{{ a.action }}</span>
+                                        <span class="badge badge-info">{{ a.action }}</span>
                                         {% endif %}
                                     </td>
                                     <td>{{ a.entity_type }} #{{ a.entity_id }}</td>
@@ -432,7 +498,8 @@
                                 </tr>
                                 {% empty %}
                                 <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                    <td colspan="6"
+                                        style="text-align: center; color: var(--text-muted); padding: 32px;">
                                         No audit entries recorded yet.
                                     </td>
                                 </tr>
@@ -643,4 +710,5 @@
         }
     </script>
 </body>
+
 </html>
